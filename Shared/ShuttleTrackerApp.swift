@@ -6,12 +6,17 @@
 //
 
 import SwiftUI
+import MapKit
 
 @main
 struct ShuttleTrackerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MapView()
         }
     }
+}
+
+#Preview {
+    MapView()
 }
