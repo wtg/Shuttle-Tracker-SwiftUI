@@ -13,19 +13,21 @@ struct ScheduleAndETA: View {
         VStack( spacing: 8 ) {
             Spacer()
             
+            
             // Shuttle ETA Summary
             VStack(spacing: 4) {
                 Text("Blitman Shuttle")
                     .font(.headline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.red)
                 Text("5 minutes")
                     .font(.system(size: 36, weight: .bold))
                     .foregroundStyle(.primary)
+                Text("View full schedule").font(.system(size: 12, weight: .bold)).foregroundStyle(.tertiary)
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 12)
             .padding(.vertical, 16)
-                        .background(.ultraThinMaterial) // liquid glass ur welcome richard
+                        .background(.ultraThinMaterial)
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
                         .overlay(
@@ -40,7 +42,9 @@ struct ScheduleAndETA: View {
         }
         .sheet(isPresented: $showSheet) {
             Text("The schedule of the shuttle can be showed here!")
-                .presentationDetents([.medium, .large]) // swipe up halfway, and lets the user swipe up even MORE. if u want it to expand fully just delete line
+                // swipe up halfway, and lets the user swipe up even MORE. if u want it to expand fully just delete line below
+                .presentationDetents([.medium, .large])
+            
         }
     }
 }
