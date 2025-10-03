@@ -12,12 +12,14 @@ struct MapView: View {
             longitudeDelta: 0.02
         )
     )
+    @StateObject private var locationManager = LocationManager()
     
     var body: some View {
         // Wrap the coordinate in MapCameraPosition
         ZStack {
             Map(position: .constant(.region(region))) {
                 // Add markers here if needed
+                UserAnnotation()
             }
             ScheduleAndETA()
             
