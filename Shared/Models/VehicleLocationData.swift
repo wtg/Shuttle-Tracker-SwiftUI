@@ -7,10 +7,10 @@
 
 
 struct VehicleLocationData: Codable {
-    let addressId: String
-    let addressName: String
+    let addressId: String?
+    let addressName: String?
     let assetType: String
-    let formattedLocation: String
+    let formattedLocation: String?
     let gatewayModel: String
     let gatewaySerial: String
     let headingDegrees: Double
