@@ -23,7 +23,6 @@ struct VehicleLocationData: Codable {
     let routeName: String
     let speedMph: Double
     let timestamp: String
-    let vehicleName: String
     let vin: String
     
     enum CodingKeys: String, CodingKey {
@@ -43,7 +42,6 @@ struct VehicleLocationData: Codable {
         case routeName = "route_name"
         case speedMph = "speed_mph"
         case timestamp
-        case vehicleName = "vehicle_name"
         case vin
     }
 }
