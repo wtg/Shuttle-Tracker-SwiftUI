@@ -21,26 +21,20 @@ struct MapView: View {
                 // Add vehicle annotations
                 ForEach(Array(vehicleLocations.keys), id: \.self) { vehicleId in
                     if let vehicle = vehicleLocations[vehicleId] {
-                        Annotation(
+                        Marker(
                             vehicle.name,
+                            systemImage: "bus.fill",
                             coordinate: CLLocationCoordinate2D(
                                 latitude: vehicle.latitude,
                                 longitude: vehicle.longitude
                             )
-                        ) {
-                            ZStack {
-                                Circle()
-                                    .fill(routeColor(for: vehicle.routeName))
-                                    .frame(width: 30, height: 30)
-                                Image(systemName: "bus.fill")
-                                    .foregroundColor(.white)
-                            }
-                        }
+                        )
+                        .tint(routeColor(for: vehicle.routeName))
                     }
                 }
 
             }
-            ScheduleAndETA()
+            // ScheduleAndETA()
         }
         .onAppear {
             // Fetch immediately on startup
