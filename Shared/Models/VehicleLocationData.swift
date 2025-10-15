@@ -20,7 +20,7 @@ struct VehicleLocationData: Codable {
     let longitude: Double
     let name: String
     let polylineIndex: Int?
-    let routeName: String
+    let routeName: String?
     let speedMph: Double
     let timestamp: String
     let vin: String
