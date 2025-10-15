@@ -55,7 +55,7 @@ struct MapView: View {
                                 // Only create polyline if we have valid coordinates
                                 if coordinates.count >= 2 {
                                     MapPolyline(coordinates: coordinates)
-                                        .stroke(hexColor(routeData.color), lineWidth: 2)
+                                        .stroke(Color(hex: routeData.color), lineWidth: 2)
                                 }
                             }
                         }
@@ -115,19 +115,5 @@ struct MapView: View {
                 print("Error fetching routes: \(error)")
             }
         }
-    }
-    
-    private func hexColor(_ hex: String) -> Color {
-        let scanner = Scanner(string: hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted))
-        var hexNumber: UInt64 = 0
-        
-        if scanner.scanHexInt64(&hexNumber) {
-            let r = Double((hexNumber & 0xff0000) >> 16) / 255
-            let g = Double((hexNumber & 0x00ff00) >> 8) / 255
-            let b = Double(hexNumber & 0x0000ff) / 255
-            return Color(red: r, green: g, blue: b)
-        }
-        
-        return .gray
     }
 }
