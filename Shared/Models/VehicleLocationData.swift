@@ -16,7 +16,7 @@ struct VehicleLocationData: Codable {
     let headingDegrees: Double
     let isEcuSpeed: Bool
     let latitude: Double
-    let licensePlate: String
+    let licensePlate: String?
     let longitude: Double
     let name: String
     let polylineIndex: Int?
