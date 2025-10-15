@@ -12,7 +12,9 @@ struct MapView: View {
     )
     @StateObject private var locationManager = LocationManager()
     @State private var vehicleLocations: VehicleInformationMap = [:]
+    @State private var routes: ShuttleRouteData = [:]
     @State private var timer: Timer?
+    
     
     var body: some View {
         ZStack {
@@ -32,13 +34,42 @@ struct MapView: View {
                         .tint(routeColor(for: vehicle.routeName))
                     }
                 }
+                
+                // Add route polylines
+                ForEach(Array(routes.keys), id: \.self) { routeName in
+                    if let routeData = routes[routeName] {
+                        ForEach(0..<routeData.routes.count, id: \.self) { index in
+                            let coordinatePairs = routeData.routes[index]
+                            
+                            // Only draw if we have at least 2 coordinate pairs
+                            if coordinatePairs.count >= 2 {
+                                let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
+                                    // Validate each coordinate has exactly 2 values
+                                    guard coord.count == 2 else { return nil }
+                                    return CLLocationCoordinate2D(
+                                        latitude: coord[0],
+                                        longitude: coord[1]
+                                    )
+                                }
+                                
+                                // Only create polyline if we have valid coordinates
+                                if coordinates.count >= 2 {
+                                    MapPolyline(coordinates: coordinates)
+                                        .stroke(hexColor(routeData.color), lineWidth: 2)
+                                }
+                            }
+                        }
+                    }
+                }
+
 
             }
-            // ScheduleAndETA()
+            ScheduleAndETA()
         }
         .onAppear {
             // Fetch immediately on startup
             fetchLocations()
+            fetchRoutes()
             
             // Start timer for periodic updates every 5 seconds
             timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
@@ -71,5 +102,32 @@ struct MapView: View {
         case "NORTH": return .red
         default: return .gray
         }
+    }
+    
+    private func fetchRoutes() {
+        Task {
+            do {
+                let routeData = try await ShuttleTrackerAPI.shared.fetchRoutes()
+                await MainActor.run {
+                    routes = routeData
+                }
+            } catch {
+                print("Error fetching routes: \(error)")
+            }
+        }
+    }
+    
+    private func hexColor(_ hex: String) -> Color {
+        let scanner = Scanner(string: hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted))
+        var hexNumber: UInt64 = 0
+        
+        if scanner.scanHexInt64(&hexNumber) {
+            let r = Double((hexNumber & 0xff0000) >> 16) / 255
+            let g = Double((hexNumber & 0x00ff00) >> 8) / 255
+            let b = Double(hexNumber & 0x0000ff) / 255
+            return Color(red: r, green: g, blue: b)
+        }
+        
+        return .gray
     }
 }
