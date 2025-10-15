@@ -15,12 +15,12 @@ struct MapView: View {
     @State private var routes: ShuttleRouteData = [:]
     @State private var timer: Timer?
     
-    
     var body: some View {
         ZStack {
             Map(position: .constant(.region(region))) {
                 UserAnnotation()
-                // Add vehicle annotations
+                
+                // Add vehicle markers
                 ForEach(Array(vehicleLocations.keys), id: \.self) { vehicleId in
                     if let vehicle = vehicleLocations[vehicleId] {
                         Marker(
@@ -41,10 +41,8 @@ struct MapView: View {
                         ForEach(0..<routeData.routes.count, id: \.self) { index in
                             let coordinatePairs = routeData.routes[index]
                             
-                            // Only draw if we have at least 2 coordinate pairs
                             if coordinatePairs.count >= 2 {
                                 let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
-                                    // Validate each coordinate has exactly 2 values
                                     guard coord.count == 2 else { return nil }
                                     return CLLocationCoordinate2D(
                                         latitude: coord[0],
@@ -52,32 +50,53 @@ struct MapView: View {
                                     )
                                 }
                                 
-                                // Only create polyline if we have valid coordinates
                                 if coordinates.count >= 2 {
                                     MapPolyline(coordinates: coordinates)
                                         .stroke(Color(hex: routeData.color), lineWidth: 2)
                                 }
                             }
                         }
+                        
+                        // Add stop markers for this route
+                        ForEach(Array(routeData.stopDetails.keys), id: \.self) { stopName in
+                            if let stop = routeData.stopDetails[stopName],
+                               stop.coordinates.count == 2 {
+                                Annotation(
+                                    stop.name,
+                                    coordinate: CLLocationCoordinate2D(
+                                        latitude: stop.coordinates[0],
+                                        longitude: stop.coordinates[1]
+                                    )
+                                ) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(.white)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color(hex: routeData.color), lineWidth: 2)
+                                            )
+                                        Circle()
+                                            .fill(Color(hex: routeData.color))
+                                            .frame(width: 8, height: 8)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-
-
             }
             ScheduleAndETA()
         }
         .onAppear {
-            // Fetch immediately on startup
             fetchLocations()
             fetchRoutes()
             
-            // Start timer for periodic updates every 5 seconds
             timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
                 fetchLocations()
             }
         }
         .onDisappear {
-            // Clean up timer when view disappears
             timer?.invalidate()
             timer = nil
         }
