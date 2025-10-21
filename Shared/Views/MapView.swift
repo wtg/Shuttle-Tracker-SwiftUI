@@ -21,65 +21,60 @@ struct MapView: View {
                 UserAnnotation()
                 
                 // Add vehicle markers
-                ForEach(Array(vehicleLocations.keys), id: \.self) { vehicleId in
-                    if let vehicle = vehicleLocations[vehicleId] {
-                        Marker(
-                            vehicle.name,
-                            systemImage: "bus.fill",
-                            coordinate: CLLocationCoordinate2D(
-                                latitude: vehicle.latitude,
-                                longitude: vehicle.longitude
-                            )
+                ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
+                    Marker(
+                        vehicle.name,
+                        systemImage: "bus.fill",
+                        coordinate: CLLocationCoordinate2D(
+                            latitude: vehicle.latitude,
+                            longitude: vehicle.longitude
                         )
-                        .tint(routeColor(for: vehicle.routeName))
-                    }
+                    )
+                    .tint(routeColor(for: vehicle.routeName))
                 }
                 
                 // Add route polylines
-                ForEach(Array(routes.keys), id: \.self) { routeName in
-                    if let routeData = routes[routeName] {
-                        ForEach(0..<routeData.routes.count, id: \.self) { index in
-                            let coordinatePairs = routeData.routes[index]
+                ForEach(Array(routes), id: \.key) { routeName, routeData in
+                    ForEach(0..<routeData.routes.count, id: \.self) { index in
+                        let coordinatePairs = routeData.routes[index]
+                        
+                        if coordinatePairs.count >= 2 {
+                            let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
+                                guard coord.count == 2 else { return nil }
+                                return CLLocationCoordinate2D(
+                                    latitude: coord[0],
+                                    longitude: coord[1]
+                                )
+                            }
                             
-                            if coordinatePairs.count >= 2 {
-                                let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
-                                    guard coord.count == 2 else { return nil }
-                                    return CLLocationCoordinate2D(
-                                        latitude: coord[0],
-                                        longitude: coord[1]
-                                    )
-                                }
-                                
-                                if coordinates.count >= 2 {
-                                    MapPolyline(coordinates: coordinates)
-                                        .stroke(Color(hex: routeData.color), lineWidth: 2)
-                                }
+                            if coordinates.count >= 2 {
+                                MapPolyline(coordinates: coordinates)
+                                    .stroke(Color(hex: routeData.color), lineWidth: 2)
                             }
                         }
-                        
-                        // Add stop markers for this route
-                        ForEach(Array(routeData.stopDetails.keys), id: \.self) { stopName in
-                            if let stop = routeData.stopDetails[stopName],
-                               stop.coordinates.count == 2 {
-                                Annotation(
-                                    stop.name,
-                                    coordinate: CLLocationCoordinate2D(
-                                        latitude: stop.coordinates[0],
-                                        longitude: stop.coordinates[1]
-                                    )
-                                ) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(.white)
-                                            .frame(width: 20, height: 20)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(Color(hex: routeData.color), lineWidth: 2)
-                                            )
-                                        Circle()
-                                            .fill(Color(hex: routeData.color))
-                                            .frame(width: 8, height: 8)
-                                    }
+                    }
+                    
+                    // Add stop markers for this route
+                    ForEach(Array(routeData.stopDetails), id: \.key) { stopName, stop in
+                        if stop.coordinates.count == 2 {
+                            Annotation(
+                                stop.name,
+                                coordinate: CLLocationCoordinate2D(
+                                    latitude: stop.coordinates[0],
+                                    longitude: stop.coordinates[1]
+                                )
+                            ) {
+                                ZStack {
+                                    Circle()
+                                        .fill(.white)
+                                        .frame(width: 20, height: 20)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color(hex: routeData.color), lineWidth: 2)
+                                        )
+                                    Circle()
+                                        .fill(Color(hex: routeData.color))
+                                        .frame(width: 8, height: 8)
                                 }
                             }
                         }
