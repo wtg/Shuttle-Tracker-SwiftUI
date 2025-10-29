@@ -35,46 +35,48 @@ struct MapView: View {
                 
                 // Add route polylines
                 ForEach(Array(routes), id: \.key) { routeName, routeData in
-                    ForEach(0..<routeData.routes.count, id: \.self) { index in
-                        let coordinatePairs = routeData.routes[index]
-                        
-                        if coordinatePairs.count >= 2 {
-                            let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
-                                guard coord.count == 2 else { return nil }
-                                return CLLocationCoordinate2D(
-                                    latitude: coord[0],
-                                    longitude: coord[1]
-                                )
-                            }
+                    if !routeData.color.starts(with: "#00") {
+                        ForEach(0..<routeData.routes.count, id: \.self) { index in
+                            let coordinatePairs = routeData.routes[index]
                             
-                            if coordinates.count >= 2 {
-                                MapPolyline(coordinates: coordinates)
-                                    .stroke(Color(hex: routeData.color), lineWidth: 2)
+                            if coordinatePairs.count >= 2 {
+                                let coordinates = coordinatePairs.compactMap { coord -> CLLocationCoordinate2D? in
+                                    guard coord.count == 2 else { return nil }
+                                    return CLLocationCoordinate2D(
+                                        latitude: coord[0],
+                                        longitude: coord[1]
+                                    )
+                                }
+                                
+                                if coordinates.count >= 2 {
+                                    MapPolyline(coordinates: coordinates)
+                                        .stroke(Color(hex: routeData.color), lineWidth: 2)
+                                }
                             }
                         }
-                    }
-                    
-                    // Add stop markers for this route
-                    ForEach(Array(routeData.stopDetails), id: \.key) { stopName, stop in
-                        if stop.coordinates.count == 2 {
-                            Annotation(
-                                stop.name,
-                                coordinate: CLLocationCoordinate2D(
-                                    latitude: stop.coordinates[0],
-                                    longitude: stop.coordinates[1]
-                                )
-                            ) {
-                                ZStack {
-                                    Circle()
-                                        .fill(.white)
-                                        .frame(width: 20, height: 20)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color(hex: routeData.color), lineWidth: 2)
-                                        )
-                                    Circle()
-                                        .fill(Color(hex: routeData.color))
-                                        .frame(width: 8, height: 8)
+                        
+                        // Add stop markers for this route
+                        ForEach(Array(routeData.stopDetails), id: \.key) { stopName, stop in
+                            if stop.coordinates.count == 2 {
+                                Annotation(
+                                    stop.name,
+                                    coordinate: CLLocationCoordinate2D(
+                                        latitude: stop.coordinates[0],
+                                        longitude: stop.coordinates[1]
+                                    )
+                                ) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(.white)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color(hex: routeData.color), lineWidth: 2)
+                                            )
+                                        Circle()
+                                            .fill(Color(hex: routeData.color))
+                                            .frame(width: 8, height: 8)
+                                    }
                                 }
                             }
                         }
