@@ -13,13 +13,12 @@ struct ScheduleAndETA: View {
         VStack( spacing: 8 ) {
             Spacer()
             
-            
             // Shuttle ETA Summary
             VStack(spacing: 4) {
-                Text("Blitman Shuttle")
+                Text("Estimated ETA")
                     .font(.headline)
                     .foregroundStyle(Color.red)
-                Text("5 minutes")
+                Text("Coming soon")
                     .font(.system(size: 36, weight: .bold))
                     .foregroundStyle(.primary)
                 Text("View full schedule").font(.system(size: 12, weight: .bold)).foregroundStyle(.tertiary)

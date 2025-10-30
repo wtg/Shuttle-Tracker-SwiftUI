@@ -35,7 +35,7 @@ struct MapView: View {
                 
                 // Add route polylines
                 ForEach(Array(routes), id: \.key) { routeName, routeData in
-                    if !routeData.color.starts(with: "#00") {
+                    if routeData.color != "#00000000" {
                         ForEach(0..<routeData.routes.count, id: \.self) { index in
                             let coordinatePairs = routeData.routes[index]
                             
@@ -102,7 +102,7 @@ struct MapView: View {
     private func fetchLocations() {
         Task {
             do {
-                let locations = try await ShuttleTrackerAPI.shared.fetchVehicleLocations()
+                let locations = try await API.shared.fetch(VehicleInformationMap.self, endpoint: "locations")
                 await MainActor.run {
                     vehicleLocations = locations
                 }
@@ -123,7 +123,7 @@ struct MapView: View {
     private func fetchRoutes() {
         Task {
             do {
-                let routeData = try await ShuttleTrackerAPI.shared.fetchRoutes()
+                let routeData = try await API.shared.fetch(ShuttleRouteData.self, endpoint: "routes")
                 await MainActor.run {
                     routes = routeData
                 }
@@ -132,4 +132,8 @@ struct MapView: View {
             }
         }
     }
+}
+
+#Preview {
+    MapView()
 }
