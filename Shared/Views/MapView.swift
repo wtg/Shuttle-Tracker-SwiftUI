@@ -20,7 +20,7 @@ struct MapView: View {
             Map(position: .constant(.region(region))) {
                 UserAnnotation()
                 
-                // Add vehicle markers
+                // Add vehicle markers, coloring them appropriatel.y
                 ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
                     Marker(
                         vehicle.name,
@@ -33,9 +33,14 @@ struct MapView: View {
                     .tint(routeColor(for: vehicle.routeName))
                 }
                 
-                // Add route polylines
+                // For all the varying routes, we draw individually its polylines AND stops.
                 ForEach(Array(routes), id: \.key) { routeName, routeData in
                     if routeData.color != "#00000000" {
+                        // LOOP DESCRIPTION: 
+                        // We draw each segment of route as a polyline
+                        // We take in a coordinate pair from the route data, split it up
+                        // and then convert to a CLLocationCoordinate2D object.
+                        // We then use the Swift Polyline features to draw colored lines between these.
                         ForEach(0..<routeData.routes.count, id: \.self) { index in
                             let coordinatePairs = routeData.routes[index]
                             
@@ -89,6 +94,7 @@ struct MapView: View {
             fetchLocations()
             fetchRoutes()
             
+            // every 5 seconds, we refresh and fetch the new bus locations to redraw.
             timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
                 fetchLocations()
             }
@@ -99,6 +105,7 @@ struct MapView: View {
         }
     }
     
+    // Update loactions
     private func fetchLocations() {
         Task {
             do {
@@ -112,6 +119,7 @@ struct MapView: View {
         }
     }
     
+    //  General route colors, if future routes are added (or if styling needs to be changed) it will happen here
     private func routeColor(for routeName: String?) -> Color {
         switch routeName {
         case "WEST": return .blue
@@ -119,7 +127,9 @@ struct MapView: View {
         default: return .gray
         }
     }
-    
+
+    // self explanatory, fetches all routes from the API endpoints. Has a generic catch statement for any errors that may arise
+    // TODO: Better error handling (mismatched format, server error, timeout, etc)
     private func fetchRoutes() {
         Task {
             do {

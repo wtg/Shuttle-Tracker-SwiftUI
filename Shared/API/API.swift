@@ -16,6 +16,15 @@ struct API {
         case invalidResponse
     }
 
+    /// Fetches and decodes a JSON object of type `T` from a given API endpoint.
+    /// Performs an asynchronous network request, validates the HTTP response,
+    /// and decodes the data into the specified type.
+    /// - Requires:
+    ///   - type: The Decodable type to decode the JSON into.
+    ///   - endpoint: The API endpoint to append to the base URL (/schedule/ for instance)
+    /// - Modifies: None
+    /// - Returns: A decoded instance of type `T`.
+    /// - Throws: `NetworkError` if the response is invalid or decoding fails.
     func fetch<T: Decodable>(_ type: T.Type, endpoint: String) async throws -> T {
         let url = baseURL.appendingPathComponent(endpoint)
         let (data, response) = try await URLSession.shared.data(from: url)
