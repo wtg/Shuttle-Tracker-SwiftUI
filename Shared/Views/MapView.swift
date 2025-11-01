@@ -18,8 +18,6 @@ struct MapView: View {
     var body: some View {
         ZStack {
             Map(position: .constant(.region(region))) {
-                UserAnnotation()
-                
                 // Add vehicle markers
                 ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
                     Marker(
@@ -82,6 +80,8 @@ struct MapView: View {
                         }
                     }
                 }
+                
+                UserAnnotation()
             }
             ScheduleAndETA()
         }
