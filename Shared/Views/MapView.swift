@@ -2,6 +2,9 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var showOnboarding = false
+    
     @State private var showSheet = false
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D.RensselaerUnion,
@@ -89,6 +92,10 @@ struct MapView: View {
             fetchLocations()
             fetchRoutes()
             
+            if !hasSeenOnboarding {
+                showOnboarding = true
+            }
+            
             timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
                 fetchLocations()
             }
@@ -96,6 +103,34 @@ struct MapView: View {
         .onDisappear {
             timer?.invalidate()
             timer = nil
+        }.sheet(isPresented: $showOnboarding) {
+            VStack(spacing: 16) {
+                Image(systemName: "location.circle.fill").font(.system(size: 56)).foregroundStyle(.tint)
+                Text("We use your location to show nearby shuttles")
+                    .font(.title2).bold()
+                    .multilineTextAlignment(.center)
+                Text("Your location helps us center the map and calculate accurate ETAs for stops near you. We only access your location while you use the app.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Spacer()
+                Button(action: {
+                    locationManager.requestAuthorization()
+                    hasSeenOnboarding = true
+                    showOnboarding = false
+                }) {
+                    Text("Allow Location Access")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                Button("Not Now") {
+                    hasSeenOnboarding = true
+                    showOnboarding = false
+                }
+                .buttonStyle(.borderless)
+            }
+            .padding()
+            .presentationDetents([.medium, .large])
         }
     }
     
