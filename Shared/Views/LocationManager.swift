@@ -8,6 +8,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         locationManager.delegate = self
+    }
+    
+    func requestAuthorization() {
         locationManager.requestWhenInUseAuthorization()
     }
     
