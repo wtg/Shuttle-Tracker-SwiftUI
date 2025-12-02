@@ -109,7 +109,7 @@ struct MapView: View {
                 Text("We use your location to show nearby shuttles")
                     .font(.title2).bold()
                     .multilineTextAlignment(.center)
-                Text("Your location helps us center the map and calculate accurate ETAs for stops near you. We only access your location while you use the app.")
+                Text("We are going to ask for your location to show on the map. Your location helps us center the map and calculate accurate ETAs for stops near you.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -119,10 +119,12 @@ struct MapView: View {
                     hasSeenOnboarding = true
                     showOnboarding = false
                 }) {
-                    Text("Allow Location Access")
+                    Text("Continue")
                         .frame(maxWidth: .infinity)
+                        .padding()
                 }
                 .buttonStyle(.borderedProminent)
+                .cornerRadius(16)
                 Button("Not Now") {
                     hasSeenOnboarding = true
                     showOnboarding = false
