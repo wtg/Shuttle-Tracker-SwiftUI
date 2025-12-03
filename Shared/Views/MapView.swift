@@ -2,6 +2,9 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var showOnboarding = false
+    
     @State private var showSheet = false
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D.RensselaerUnion,
@@ -18,8 +21,6 @@ struct MapView: View {
     var body: some View {
         ZStack {
             Map(position: .constant(.region(region))) {
-                UserAnnotation()
-                
                 // Add vehicle markers
                 ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
                     Marker(
@@ -82,12 +83,18 @@ struct MapView: View {
                         }
                     }
                 }
+                
+                UserAnnotation()
             }
             ScheduleAndETA()
         }
         .onAppear {
             fetchLocations()
             fetchRoutes()
+            
+            if !hasSeenOnboarding {
+                showOnboarding = true
+            }
             
             timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
                 fetchLocations()
@@ -96,6 +103,36 @@ struct MapView: View {
         .onDisappear {
             timer?.invalidate()
             timer = nil
+        }.sheet(isPresented: $showOnboarding) {
+            VStack(spacing: 16) {
+                Image(systemName: "location.circle.fill").font(.system(size: 56)).foregroundStyle(.tint)
+                Text("We use your location to show nearby shuttles")
+                    .font(.title2).bold()
+                    .multilineTextAlignment(.center)
+                Text("We are going to ask for your location to show on the map. Your location helps us center the map and calculate accurate ETAs for stops near you.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Spacer()
+                Button(action: {
+                    locationManager.requestAuthorization()
+                    hasSeenOnboarding = true
+                    showOnboarding = false
+                }) {
+                    Text("Continue")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
+                .buttonStyle(.borderedProminent)
+                .cornerRadius(16)
+                Button("Not Now") {
+                    hasSeenOnboarding = true
+                    showOnboarding = false
+                }
+                .buttonStyle(.borderless)
+            }
+            .padding()
+            .presentationDetents([.medium, .large])
         }
     }
     
