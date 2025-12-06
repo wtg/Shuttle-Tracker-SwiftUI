@@ -40,7 +40,7 @@ struct ScheduleAndETA: View {
             showSheet = true
         }
         .sheet(isPresented: $showSheet) {
-            Text("The schedule of the shuttle can be showed here!")
+            ScheduleView()
                 // swipe up halfway, and lets the user swipe up even MORE. if u want it to expand fully just delete line below
                 .presentationDetents([.medium, .large])
             
