@@ -64,7 +64,7 @@ struct ScheduleView: View {
             .task {
                 await loadData()
             }
-            .onChange(of: scenePhase) { newPhase in
+            .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .active {
                     updateScheduleForCurrentDay()
                 }
