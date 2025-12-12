@@ -93,7 +93,7 @@ struct MapView: View {
 
       // UI Overlay
       VStack {
-        HStack {
+        HStack(alignment: .top) {
           if isDeveloperMode {
             VStack(alignment: .leading) {
               Button(action: {
@@ -102,7 +102,7 @@ struct MapView: View {
                 }
               }) {
                 Image(systemName: "ladybug.fill")
-                  .font(.system(size: 20))
+                  .font(.system(size: 16))
                   .foregroundStyle(.white)
                   .padding(12)
                   .background(Color.purple)
@@ -115,7 +115,7 @@ struct MapView: View {
                   .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .topLeading)))
               }
             }
-            .padding(.top, 50)
+            .padding(.top, 20)
             .padding(.leading, 16)
           }
 
