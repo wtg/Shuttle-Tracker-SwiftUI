@@ -19,6 +19,10 @@ struct ScheduleView: View {
     @State private var selectedDay: Int = Calendar.current.component(.weekday, from: Date()) - 1
     @State private var selectedRoute: String?
     
+    // Timer to refresh display as time passes
+    @State private var refreshTrigger = false
+    @State private var refreshTimer: Timer?
+    
     private let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     
     var body: some View {
@@ -71,14 +75,27 @@ struct ScheduleView: View {
             .task {
                 await loadData()
             }
+            .onAppear {
+                // Start timer to refresh display every 30 seconds
+                refreshTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+                    refreshTrigger.toggle()
+                }
+            }
+            .onDisappear {
+                refreshTimer?.invalidate()
+                refreshTimer = nil
+            }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .active {
                     updateScheduleForSelectedDay()
+                    refreshTrigger.toggle()
                 }
             }
             .onChange(of: selectedDay) { _, _ in
                 updateScheduleForSelectedDay()
             }
+            // This triggers a re-render when refreshTrigger changes
+            .id(refreshTrigger)
         }
     }
     
