@@ -15,6 +15,12 @@ struct ScheduleView: View {
     @State private var isLoading = true
     @State private var error: String?
     
+    // Day and route selection
+    @State private var selectedDay: Int = Calendar.current.component(.weekday, from: Date()) - 1
+    @State private var selectedRoute: String?
+    
+    private let daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    
     var body: some View {
         NavigationView {
             Group {
@@ -24,36 +30,37 @@ struct ScheduleView: View {
                     Text("Error: \(error)")
                         .foregroundColor(.red)
                 } else if let schedule = schedule, let routes = routes {
-                    List {
-                        ForEach(schedule.keys.sorted(), id: \.self) { routeName in
-                            Section(header: Text(routeName)) {
-                                if let routeData = routes[routeName] {
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack {
-                                            ForEach(routeData.stops, id: \.self) { stopKey in
-                                                if let stopName = routeData.stopDetails[stopKey]?.name {
-                                                    Text(stopName)
-                                                        .padding(8)
-                                                        .background(Color.gray.opacity(0.2))
-                                                        .cornerRadius(8)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                if let times = schedule[routeName] {
-                                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))]) {
-                                        ForEach(times, id: \.self) { time in
-                                            Text(time)
-                                                .font(.caption)
-                                                .padding(4)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(4)
-                                        }
-                                    }
+                    VStack(spacing: 0) {
+                        // Day and Route Pickers
+                        HStack {
+                            Picker("Day", selection: $selectedDay) {
+                                ForEach(0..<7, id: \.self) { index in
+                                    Text(daysOfWeek[index]).tag(index)
                                 }
                             }
+                            .pickerStyle(.menu)
+                            .tint(.primary)
+                            
+                            if let routeNames = availableRoutes {
+                                Picker("Route", selection: $selectedRoute) {
+                                    ForEach(routeNames, id: \.self) { route in
+                                        Text(route).tag(route as String?)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(.primary)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        
+                        // Schedule content
+                        if let currentRoute = selectedRoute,
+                           let routeData = routes[currentRoute],
+                           let times = schedule[currentRoute] {
+                            scheduleList(routeData: routeData, times: times)
+                        } else {
+                            ContentUnavailableView("No Schedule", systemImage: "calendar.badge.exclamationmark", description: Text("No schedule available for this selection."))
                         }
                     }
                 } else {
@@ -66,10 +73,149 @@ struct ScheduleView: View {
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .active {
-                    updateScheduleForCurrentDay()
+                    updateScheduleForSelectedDay()
+                }
+            }
+            .onChange(of: selectedDay) { _, _ in
+                updateScheduleForSelectedDay()
+            }
+        }
+    }
+    
+    private var availableRoutes: [String]? {
+        schedule?.keys.sorted()
+    }
+    
+    @ViewBuilder
+    private func scheduleList(routeData: RouteDirectionData, times: [String]) -> some View {
+        let sortedTimes = sortTimesByRelevance(times)
+        
+        List {
+            // Stop names header
+            Section {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(routeData.stops, id: \.self) { stopKey in
+                            if let stopName = routeData.stopDetails[stopKey]?.name {
+                                Text(stopName)
+                                    .font(.caption)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
+                }
+            } header: {
+                Text("Stops")
+            }
+            
+            // Upcoming times
+            if sortedTimes.justDeparted != nil || !sortedTimes.upcoming.isEmpty {
+                Section {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 70))], spacing: 8) {
+                        // Show just departed time first with different styling
+                        if let justDeparted = sortedTimes.justDeparted {
+                            Text(justDeparted)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Color.gray.opacity(0.25))
+                                .foregroundStyle(.secondary)
+                                .cornerRadius(6)
+                        }
+                        
+                        // Then show upcoming times
+                        ForEach(sortedTimes.upcoming, id: \.self) { time in
+                            Text(time)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Color.blue.opacity(0.15))
+                                .cornerRadius(6)
+                        }
+                    }
+                } header: {
+                    Text("Upcoming")
+                }
+            }
+            
+            // Expired times (only show on today's schedule)
+            if isToday && !sortedTimes.expired.isEmpty {
+                Section {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 70))], spacing: 8) {
+                        ForEach(sortedTimes.expired, id: \.self) { time in
+                            Text(time)
+                                .font(.subheadline)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(Color.gray.opacity(0.15))
+                                .foregroundStyle(.secondary)
+                                .cornerRadius(6)
+                        }
+                    }
+                } header: {
+                    Text("Earlier Today")
                 }
             }
         }
+    }
+    
+    private var isToday: Bool {
+        let todayIndex = Calendar.current.component(.weekday, from: Date()) - 1
+        return selectedDay == todayIndex
+    }
+    
+    private func sortTimesByRelevance(_ times: [String]) -> (upcoming: [String], expired: [String], justDeparted: String?) {
+        // If not viewing today, all times are "upcoming" in their original order
+        guard isToday else {
+            return (upcoming: times, expired: [], justDeparted: nil)
+        }
+        
+        let now = Date()
+        
+        // Since times are pre-sorted chronologically by the API (with 12 AM at end = midnight),
+        // find the first time that hasn't passed yet and use it as the pivot
+        var pivotIndex = times.count // Default: all expired
+        
+        for (index, time) in times.enumerated() {
+            if let date = parseTime(time), date > now {
+                pivotIndex = index
+                break
+            }
+        }
+        
+        // Everything before pivot is expired, everything from pivot onwards is upcoming
+        // The last expired time is "just departed"
+        let justDeparted = pivotIndex > 0 ? times[pivotIndex - 1] : nil
+        let expired = pivotIndex > 1 ? Array(times[0..<(pivotIndex - 1)]) : []
+        let upcoming = Array(times[pivotIndex...])
+        
+        return (upcoming: upcoming, expired: expired, justDeparted: justDeparted)
+    }
+    
+    private func parseTime(_ timeString: String) -> Date? {
+        // Parse time like "7:00 AM" or "10:30 PM"
+        let trimmed = timeString.trimmingCharacters(in: .whitespaces)
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        if let time = formatter.date(from: trimmed) {
+            let calendar = Calendar.current
+            let now = Date()
+            var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+            dateComponents.hour = timeComponents.hour
+            dateComponents.minute = timeComponents.minute
+            dateComponents.second = 0
+            return calendar.date(from: dateComponents)
+        }
+        
+        return nil
     }
     
     private func loadData() async {
@@ -80,7 +226,7 @@ struct ScheduleView: View {
             self.allSchedules = try await fetchedSchedule
             self.routes = try await fetchedRoutes
             
-            updateScheduleForCurrentDay()
+            updateScheduleForSelectedDay()
             
             self.isLoading = false
         } catch {
@@ -89,17 +235,18 @@ struct ScheduleView: View {
         }
     }
     
-    private func updateScheduleForCurrentDay() {
+    private func updateScheduleForSelectedDay() {
         guard let allSchedules = allSchedules else { return }
         
-        // Determine current day index (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-        let weekday = Calendar.current.component(.weekday, from: Date())
-        let index = weekday - 1
-        
-        if index < allSchedules.count {
-            self.schedule = allSchedules[index]
+        if selectedDay < allSchedules.count {
+            self.schedule = allSchedules[selectedDay]
         } else {
-            self.schedule = allSchedules.first // Fallback
+            self.schedule = allSchedules.first
+        }
+        
+        // Set default route if none selected or current not available
+        if selectedRoute == nil || !(schedule?.keys.contains(selectedRoute!) ?? false) {
+            selectedRoute = schedule?.keys.sorted().first
         }
     }
 }
