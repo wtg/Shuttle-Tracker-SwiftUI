@@ -14,6 +14,7 @@ struct MapView: View {
         )
     )
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var animationManager = ShuttleAnimationManager()
     @State private var vehicleLocations: VehicleInformationMap = [:]
     @State private var routes: ShuttleRouteData = [:]
     @State private var timer: Timer?
@@ -21,15 +22,15 @@ struct MapView: View {
     var body: some View {
         ZStack {
             Map(position: .constant(.region(region))) {
-                // Add vehicle markers
+                // Add vehicle markers with animated positions
                 ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
+                    let animatedCoord = animationManager.animatedPositions[vehicleId]
+                        ?? CLLocationCoordinate2D(latitude: vehicle.latitude, longitude: vehicle.longitude)
+                    
                     Marker(
                         vehicle.name,
                         systemImage: "bus.fill",
-                        coordinate: CLLocationCoordinate2D(
-                            latitude: vehicle.latitude,
-                            longitude: vehicle.longitude
-                        )
+                        coordinate: animatedCoord
                     )
                     .tint(routeColor(for: vehicle.routeName))
                 }
@@ -91,6 +92,7 @@ struct MapView: View {
         .onAppear {
             fetchLocations()
             fetchRoutes()
+            animationManager.startAnimating()
             
             if !hasSeenOnboarding {
                 showOnboarding = true
@@ -103,6 +105,7 @@ struct MapView: View {
         .onDisappear {
             timer?.invalidate()
             timer = nil
+            animationManager.stopAnimating()
         }.sheet(isPresented: $showOnboarding) {
             VStack(spacing: 16) {
                 Image(systemName: "location.circle.fill").font(.system(size: 56)).foregroundStyle(.tint)
@@ -142,6 +145,8 @@ struct MapView: View {
                 let locations = try await API.shared.fetch(VehicleInformationMap.self, endpoint: "locations")
                 await MainActor.run {
                     vehicleLocations = locations
+                    // Feed data to animation manager for smooth interpolation
+                    animationManager.updateVehicleData(locations, routes: routes)
                 }
             } catch {
                 print("Error fetching vehicle locations: \(error)")
