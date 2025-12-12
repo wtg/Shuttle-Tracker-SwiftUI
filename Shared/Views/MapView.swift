@@ -7,6 +7,8 @@ struct MapView: View {
 
   @State private var showSheet = false
   @State private var showSettings = false
+  @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
+  @State private var showDeveloperPanel = false
 
   @State private var region = MKCoordinateRegion(
     center: CLLocationCoordinate2D.RensselaerUnion,
@@ -92,6 +94,31 @@ struct MapView: View {
       // UI Overlay
       VStack {
         HStack {
+          if isDeveloperMode {
+            VStack(alignment: .leading) {
+              Button(action: {
+                withAnimation {
+                  showDeveloperPanel.toggle()
+                }
+              }) {
+                Image(systemName: "ladybug.fill")
+                  .font(.system(size: 20))
+                  .foregroundStyle(.white)
+                  .padding(12)
+                  .background(Color.purple)
+                  .clipShape(Circle())
+                  .shadow(radius: 4)
+              }
+
+              if showDeveloperPanel {
+                DeveloperModeView(vehicles: vehicleLocations)
+                  .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .topLeading)))
+              }
+            }
+            .padding(.top, 50)
+            .padding(.leading, 16)
+          }
+
           Spacer()
           Button(action: {
             showSettings = true

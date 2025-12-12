@@ -2,11 +2,16 @@ import SwiftUI
 
 struct SettingsView: View {
   @Environment(\.dismiss) var dismiss
+  @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
 
   var body: some View {
     NavigationStack {
       List {
-        // Empty for now
+        Section {
+          Toggle("Developer Mode", isOn: $isDeveloperMode)
+        } header: {
+          Text("General")
+        }
       }
       .navigationTitle("Settings")
       .navigationBarTitleDisplayMode(.inline)
