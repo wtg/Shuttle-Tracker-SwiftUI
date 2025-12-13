@@ -55,7 +55,7 @@ struct MapView: View {
 
                 if coordinates.count >= 2 {
                   MapPolyline(coordinates: coordinates)
-                    .stroke(Color(hex: routeData.color), lineWidth: 2)
+                    .stroke(Color(hex: routeData.color).opacity(0.6), lineWidth: 4)
                 }
               }
             }
@@ -90,15 +90,13 @@ struct MapView: View {
 
         UserAnnotation()
       }
-
-      // Tap to dismiss overlay
-      if showDeveloperPanel {
-        Color.black.opacity(0.001)
-          .onTapGesture {
-            withAnimation {
-              showDeveloperPanel = false
-            }
+      .mapStyle(.standard(pointsOfInterest: .including([.school, .university])))
+      .onTapGesture {
+        if showDeveloperPanel {
+          withAnimation {
+            showDeveloperPanel = false
           }
+        }
       }
 
       // UI Overlay
