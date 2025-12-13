@@ -91,11 +91,33 @@ struct MapView: View {
         UserAnnotation()
       }
 
+      // Tap to dismiss overlay
+      if showDeveloperPanel {
+        Color.black.opacity(0.001)
+          .onTapGesture {
+            withAnimation {
+              showDeveloperPanel = false
+            }
+          }
+      }
+
       // UI Overlay
       VStack {
         HStack(alignment: .top) {
-          if isDeveloperMode {
-            VStack(alignment: .leading) {
+          VStack(alignment: .leading) {
+            Button(action: {
+              showSettings = true
+            }) {
+              Image(systemName: "gearshape.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(.primary)
+                .padding()
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+                .shadow(radius: 4)
+            }
+
+            if isDeveloperMode {
               Button(action: {
                 withAnimation {
                   showDeveloperPanel.toggle()
@@ -104,7 +126,7 @@ struct MapView: View {
                 Image(systemName: "ladybug.fill")
                   .font(.system(size: 16))
                   .foregroundStyle(.white)
-                  .padding(12)
+                  .padding()
                   .background(Color.purple)
                   .clipShape(Circle())
                   .shadow(radius: 4)
@@ -115,24 +137,11 @@ struct MapView: View {
                   .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .topLeading)))
               }
             }
-            .padding(.top, 20)
-            .padding(.leading, 16)
-          }
-
-          Spacer()
-          Button(action: {
-            showSettings = true
-          }) {
-            Image(systemName: "gearshape.fill")
-              .font(.system(size: 16))
-              .foregroundStyle(.primary)
-              .padding()
-              .background(.ultraThinMaterial)
-              .clipShape(Circle())
-              .shadow(radius: 4)
           }
           .padding(.top, 20)
-          .padding(.trailing, 16)
+          .padding(.leading, 16)
+
+          Spacer()
         }
         Spacer()
       }

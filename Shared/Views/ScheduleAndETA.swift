@@ -15,13 +15,12 @@ struct ScheduleAndETA: View {
 
       // Shuttle ETA Summary
       VStack(spacing: 4) {
-        Text("Estimated ETA")
+        Text("Arrival Times")
           .font(.headline)
           .foregroundStyle(Color.red)
-        Text("Coming soon")
+        Text("View schedule")
           .font(.system(size: 36, weight: .bold))
           .foregroundStyle(.primary)
-        Text("View full schedule").font(.system(size: 12, weight: .bold)).foregroundStyle(.tertiary)
       }
       .frame(maxWidth: .infinity)
       .padding(.bottom, 12)

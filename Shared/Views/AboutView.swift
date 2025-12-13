@@ -13,14 +13,18 @@ struct AboutView: View {
           Text("an RCOS Project")
             .font(.subheadline)
             .foregroundStyle(.secondary)
+
+          Text("supported by the Student Senate Web Technologies Group (WTG)")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
         }
-        .padding(.top, 20)
 
         Divider()
 
         // Taglines
         VStack(spacing: 12) {
-          Text("Making Shuttles Accountable")
+          Text("Making Shuttles Accountable, Predictable, Reliable")
             .font(.title3)
             .fontWeight(.semibold)
             .multilineTextAlignment(.center)
