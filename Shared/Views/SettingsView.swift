@@ -12,6 +12,14 @@ struct SettingsView: View {
         } header: {
           Text("General")
         }
+
+        Section {
+          NavigationLink("About") {
+            AboutView()
+          }
+        } header: {
+          Text("Info")
+        }
       }
       .navigationTitle("Settings")
       .navigationBarTitleDisplayMode(.inline)
