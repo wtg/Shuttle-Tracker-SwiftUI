@@ -275,19 +275,11 @@ struct ScheduleView: View {
 
               // Check for "upcoming" if it is today
               // We treat 12:00 AM - 4:00 AM as "late night" (next day technically)
-              // Ideally, we'd have better logic, but for now:
-              // If `isToday` and time is passed, skip it.
-              // BUT wait, if it's 11 PM and next bus is 12 AM (0 minutes), 0 < 1380. It looks like past.
-              // However, 12 AM is usually stored as next day.
-              // Let's assume strict daily chronological filtering.
-              // If I am at 2 PM (14:00), I see 2:15 PM and later.
-
               var shouldInclude = true
               if isToday {
                 // Simple comparison: if itemMinutes < currentMinutes, it's past.
-                // CAVEAT: 12:xx AM (0 minutes) vs 11:xx PM (1380 minutes).
-                // If bus is 12:00 AM and now is 11:00 PM.
-                // 0 < 1380. It is hidden. This is technically correct (00:00 happened 23 hours ago).
+                // If bus is 12:00 AM and now is 11:00 PM, 0 < 1380. It is hidden. 
+                // This is technically correct (00:00 happened 23 hours ago).
                 // The "Next day" 12:00 AM is technically tomorrow's schedule.
                 // So strictly filtering for "upcoming today" works fine.
 

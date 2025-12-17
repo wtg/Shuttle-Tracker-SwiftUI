@@ -65,18 +65,7 @@ struct DeveloperModeView: View {
   }
 }
 
-// Extension to help with unique ID if needed, though VehicleLocationData might not have 'id' property explicitly in model as 'id', it uses key or we need to check model.
-// Looking at previous `VehicleLocationData` model file view:
-// It has: name, routeName, speedMph, headingDegrees.
-// It DOES NOT have an 'id' field. The dictionary key is the ID.
-// Wait, I should update the loop to use Dictionary keys.
-
 extension VehicleLocationData {
-  // Helper to conform to Identifiable for the view if I wrap it,
-  // but here I used specific properties. I need to make sure I access valid properties.
-  // 'id' is not in the struct. I should use 'name' or inject the ID.
-  // The loop in `MapView` uses `id: \.key`.
-  // I should pass the dictionary or an array of struct that includes the ID.
 
   // Changing approach slightly in the view code above to use what's available.
   var id: String { name }  // Using name as ID for now since key is usually name or id.
