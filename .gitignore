@@ -2,3 +2,5 @@ xcuserdata/
 .DS_Store
 .idea
 .vscode
+build_log.txt
+buildServer.json
