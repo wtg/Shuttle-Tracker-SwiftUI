@@ -1,14 +1,16 @@
 import MapKit
 import SwiftUI
+import os
 
 struct MapView: View {
   @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
   @State private var showOnboarding = false
 
-  @State private var showSheet = false
   @State private var showSettings = false
   @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
   @State private var showDeveloperPanel = false
+
+  private let logger = Logger(subsystem: "com.shuttletracker", category: "mapview")
 
   @State private var region = MKCoordinateRegion(
     center: CLLocationCoordinate2D.RensselaerUnion,
@@ -18,22 +20,24 @@ struct MapView: View {
     )
   )
   @StateObject private var locationManager = LocationManager()
-  @State private var vehicleLocations: VehicleInformationMap = [:]
+  @StateObject private var animationManager = ShuttleAnimationManager()
   @StateObject private var routeManager = RouteDataManager()
+  @State private var vehicleLocations: VehicleInformationMap = [:]
   @State private var timer: Timer?
 
   var body: some View {
     ZStack {
       Map(position: .constant(.region(region))) {
-        // Add vehicle markers
+        // Add vehicle markers with animated positions
         ForEach(Array(vehicleLocations), id: \.key) { vehicleId, vehicle in
+          let animatedCoord =
+            animationManager.animatedPositions[vehicleId]
+            ?? CLLocationCoordinate2D(latitude: vehicle.latitude, longitude: vehicle.longitude)
+
           Marker(
             vehicle.name,
             systemImage: "bus.fill",
-            coordinate: CLLocationCoordinate2D(
-              latitude: vehicle.latitude,
-              longitude: vehicle.longitude
-            )
+            coordinate: animatedCoord
           )
           .tint(routeColor(for: vehicle.routeName))
         }
@@ -152,19 +156,25 @@ struct MapView: View {
     .onAppear {
       fetchLocations()
       // Routes are now managed by RouteDataManager
+      animationManager.startAnimating()
 
       if !hasSeenOnboarding {
         showOnboarding = true
       }
 
-      timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-        fetchLocations()
+      // Only create timer if one doesn't already exist (prevents leaks on re-appear)
+      if timer == nil {
+        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+          fetchLocations()
+        }
       }
     }
     .onDisappear {
       timer?.invalidate()
       timer = nil
-    }.sheet(isPresented: $showOnboarding) {
+      animationManager.stopAnimating()
+    }
+    .sheet(isPresented: $showOnboarding) {
       VStack(spacing: 16) {
         Image(systemName: "location.circle.fill").font(.system(size: 56)).foregroundStyle(.tint)
         Text("We use your location to show nearby shuttles")
@@ -206,9 +216,11 @@ struct MapView: View {
           VehicleInformationMap.self, endpoint: "locations")
         await MainActor.run {
           vehicleLocations = locations
+          // Feed data to animation manager for smooth interpolation
+          animationManager.updateVehicleData(locations, routes: routeManager.routes)
         }
       } catch {
-        print("Error fetching vehicle locations: \(error)")
+        logger.error("Error fetching vehicle locations: \(error)")
       }
     }
   }
