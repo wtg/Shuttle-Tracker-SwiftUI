@@ -19,7 +19,7 @@ struct MapView: View {
   )
   @StateObject private var locationManager = LocationManager()
   @State private var vehicleLocations: VehicleInformationMap = [:]
-  @State private var routes: ShuttleRouteData = [:]
+  @StateObject private var routeManager = RouteDataManager()
   @State private var timer: Timer?
 
   var body: some View {
@@ -38,8 +38,8 @@ struct MapView: View {
           .tint(routeColor(for: vehicle.routeName))
         }
 
-        // Add route polylines
-        ForEach(Array(routes), id: \.key) { routeName, routeData in
+        // Add route polylines (filtered by RouteDataManager based on today's schedule)
+        ForEach(Array(routeManager.routes), id: \.key) { routeName, routeData in
           if routeData.color != "#00000000" {
             ForEach(0..<routeData.routes.count, id: \.self) { index in
               let coordinatePairs = routeData.routes[index]
@@ -136,7 +136,7 @@ struct MapView: View {
               }
             }
           }
-          .padding(.top, 20)
+          .padding(.top, 60)
           .padding(.leading, 16)
 
           Spacer()
@@ -151,7 +151,7 @@ struct MapView: View {
     }
     .onAppear {
       fetchLocations()
-      fetchRoutes()
+      // Routes are now managed by RouteDataManager
 
       if !hasSeenOnboarding {
         showOnboarding = true
@@ -218,19 +218,6 @@ struct MapView: View {
     case "WEST": return .blue
     case "NORTH": return .red
     default: return .gray
-    }
-  }
-
-  private func fetchRoutes() {
-    Task {
-      do {
-        let routeData = try await API.shared.fetch(ShuttleRouteData.self, endpoint: "routes")
-        await MainActor.run {
-          routes = routeData
-        }
-      } catch {
-        print("Error fetching routes: \(error)")
-      }
     }
   }
 }

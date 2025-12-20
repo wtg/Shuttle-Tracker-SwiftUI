@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ScheduleView: View {
-  @Environment(\.dismiss) var dismiss
   @State private var scheduleData: ScheduleData?
   @State private var selectedDay: DayOfWeek = .monday
   @State private var selectedDirection: String?
@@ -154,13 +153,6 @@ struct ScheduleView: View {
       }
       .navigationTitle("Schedule")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
-            dismiss()
-          }
-        }
-      }
     }
     .onAppear {
       // Auto-select today
@@ -278,7 +270,7 @@ struct ScheduleView: View {
               var shouldInclude = true
               if isToday {
                 // Simple comparison: if itemMinutes < currentMinutes, it's past.
-                // If bus is 12:00 AM and now is 11:00 PM, 0 < 1380. It is hidden. 
+                // If bus is 12:00 AM and now is 11:00 PM, 0 < 1380. It is hidden.
                 // This is technically correct (00:00 happened 23 hours ago).
                 // The "Next day" 12:00 AM is technically tomorrow's schedule.
                 // So strictly filtering for "upcoming today" works fine.

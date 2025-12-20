@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-  @Environment(\.dismiss) var dismiss
   @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
 
   var body: some View {
@@ -23,13 +22,6 @@ struct SettingsView: View {
       }
       .navigationTitle("Settings")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Done") {
-            dismiss()
-          }
-        }
-      }
     }
   }
 }
