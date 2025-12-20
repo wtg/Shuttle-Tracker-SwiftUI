@@ -136,7 +136,7 @@ struct MapView: View {
               }
             }
           }
-          .padding(.top, 20)
+          .padding(.top, 60)
           .padding(.leading, 16)
 
           Spacer()
