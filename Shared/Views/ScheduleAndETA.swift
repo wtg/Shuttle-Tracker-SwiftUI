@@ -18,7 +18,7 @@ struct ScheduleAndETA: View {
         Text("Arrival Times")
           .font(.headline)
           .foregroundStyle(Color.red)
-        Text("View schedule")
+        Text("View Schedule")
           .font(.system(size: 36, weight: .bold))
           .foregroundStyle(.primary)
       }
