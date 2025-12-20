@@ -18,7 +18,7 @@ struct ShuttleStopData: Codable {
     }
 }
 
-struct RouteDirectionData: Decodable {
+struct RouteDirectionData: Codable {
     let color: String
     let stops: [String]
     let polylineStops: [String]
@@ -61,6 +61,21 @@ struct RouteDirectionData: Decodable {
             }
         }
         stopDetails = details
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: AnyKey.self)
+        
+        // Encode fixed keys
+        try container.encode(color, forKey: AnyKey(stringValue: FixedKeys.color.rawValue)!)
+        try container.encode(stops, forKey: AnyKey(stringValue: FixedKeys.stops.rawValue)!)
+        try container.encode(polylineStops, forKey: AnyKey(stringValue: FixedKeys.polylineStops.rawValue)!)
+        try container.encode(routes, forKey: AnyKey(stringValue: FixedKeys.routes.rawValue)!)
+        
+        // Encode dynamic stop keys
+        for (name, stop) in stopDetails {
+            try container.encode(stop, forKey: AnyKey(stringValue: name)!)
+        }
     }
 }
 
