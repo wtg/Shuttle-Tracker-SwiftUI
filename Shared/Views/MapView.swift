@@ -1,14 +1,16 @@
 import MapKit
 import SwiftUI
+import os
 
 struct MapView: View {
   @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
   @State private var showOnboarding = false
 
-  @State private var showSheet = false
   @State private var showSettings = false
   @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
   @State private var showDeveloperPanel = false
+
+  private let logger = Logger(subsystem: "com.shuttletracker", category: "mapview")
 
   @State private var region = MKCoordinateRegion(
     center: CLLocationCoordinate2D.RensselaerUnion,
@@ -160,8 +162,11 @@ struct MapView: View {
         showOnboarding = true
       }
 
-      timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-        fetchLocations()
+      // Only create timer if one doesn't already exist (prevents leaks on re-appear)
+      if timer == nil {
+        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+          fetchLocations()
+        }
       }
     }
     .onDisappear {
@@ -215,7 +220,7 @@ struct MapView: View {
           animationManager.updateVehicleData(locations, routes: routeManager.routes)
         }
       } catch {
-        print("Error fetching vehicle locations: \(error)")
+        logger.error("Error fetching vehicle locations: \(error)")
       }
     }
   }
