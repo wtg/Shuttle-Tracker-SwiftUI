@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ScheduleView: View {
-  @Environment(\.dismiss) var dismiss
   @State private var scheduleData: ScheduleData?
   @State private var selectedDay: DayOfWeek = .monday
   @State private var selectedDirection: String?
