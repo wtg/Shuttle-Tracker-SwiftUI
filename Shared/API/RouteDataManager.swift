@@ -147,7 +147,7 @@ class RouteDataManager: ObservableObject {
     }
 
     await fetchRoutes()
-    await fetchAggregatedSchedule()
+    // await fetchAggregatedSchedule()
     updateFilteredRoutes()
     saveToCache()
     isLoaded = true
