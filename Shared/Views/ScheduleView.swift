@@ -132,8 +132,8 @@ struct ScheduleView: View {
                         .bold()
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(busColor(for: timeInfo.busName).opacity(0.15))
-                        .foregroundStyle(busColor(for: timeInfo.busName))
+                        .background(Color.forRoute(timeInfo.busName).opacity(0.15))
+                        .foregroundStyle(Color.forRoute(timeInfo.busName))
                         .cornerRadius(4)
                     }
                   }
@@ -297,15 +297,6 @@ struct ScheduleView: View {
 
     // Sort chronologically
     return consolidatedTimes.sorted { $0.date < $1.date }
-  }
-
-  private func busColor(for name: String) -> Color {
-    let normalized = name.lowercased()
-    if normalized.contains("west") { return .blue }
-    if normalized.contains("north") { return .red }
-    if normalized.contains("1") { return .orange }
-    if normalized.contains("2") { return .green }
-    return .gray
   }
 }
 

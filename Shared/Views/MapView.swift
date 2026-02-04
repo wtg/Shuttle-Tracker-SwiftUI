@@ -35,7 +35,7 @@ struct MapView: View {
               longitude: vehicle.longitude
             )
           )
-          .tint(routeColor(for: vehicle.routeName))
+          .tint(Color.forRoute(vehicle.routeName))
         }
 
         // Add route polylines (filtered by RouteDataManager based on today's schedule)
@@ -210,14 +210,6 @@ struct MapView: View {
       } catch {
         print("Error fetching vehicle locations: \(error)")
       }
-    }
-  }
-
-  private func routeColor(for routeName: String?) -> Color {
-    switch routeName {
-    case "WEST": return .blue
-    case "NORTH": return .red
-    default: return .gray
     }
   }
 }

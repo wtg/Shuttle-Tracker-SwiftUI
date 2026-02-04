@@ -32,4 +32,12 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+    static func forRoute(_ name: String?) -> Color {
+        guard let name = name?.uppercased() else { return .gray }
+        if name.contains("WEST") { return .blue }
+        if name.contains("NORTH") { return .red }
+        if name.contains("1") { return .orange }
+        if name.contains("2") { return .purple }
+        return .gray
+    }
 }
