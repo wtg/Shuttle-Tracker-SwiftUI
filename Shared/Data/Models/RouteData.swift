@@ -1,16 +1,17 @@
 //
-//  ShuttleStopData.swift
+//  RouteData.swift
 //  iOS
 //
 //  Created by RS on 10/10/25.
 //
 
+import Foundation
 
+// shuttle stop model from /routes response
 struct ShuttleStopData: Codable {
     let coordinates: [Double]
     let offset: Int
     let name: String
-    
     enum CodingKeys: String, CodingKey {
         case coordinates = "COORDINATES"
         case offset = "OFFSET"
@@ -23,7 +24,7 @@ struct RouteDirectionData: Codable {
     let stops: [String]
     let polylineStops: [String]
     let routes: [[[Double]]]
-    let stopDetails: [String: ShuttleStopData] // dynamic stop objects by name
+    let stopDetails: [String: ShuttleStopData] // Dynamic stop objects by name
 
     private enum FixedKeys: String, CodingKey {
         case color = "COLOR"
@@ -48,35 +49,38 @@ struct RouteDirectionData: Codable {
         polylineStops = try container.decode([String].self, forKey: AnyKey(stringValue: FixedKeys.polylineStops.rawValue)!)
         routes = try container.decode([[[Double]]].self, forKey: AnyKey(stringValue: FixedKeys.routes.rawValue)!)
 
-        // Decode dynamic stop keys, but only those listed in STOPS
+        // Decode dynamic stop keys, but only those listed in STOPS or POLYLINE_STOPS
         let fixed = Set([FixedKeys.color.rawValue, FixedKeys.stops.rawValue, FixedKeys.polylineStops.rawValue, FixedKeys.routes.rawValue])
-        let validStopNames = Set(stops)
+        let validStopNames = Set(stops).union(Set(polylineStops))
+
         var details: [String: ShuttleStopData] = [:]
 
         for key in container.allKeys {
             let name = key.stringValue
-            guard !fixed.contains(name), validStopNames.contains(name) else { continue }
-            if let stop = try? container.decode(ShuttleStopData.self, forKey: key) {
-                details[name] = stop
+            // Only decode if it's NOT a fixed key and IS a known stop name
+            if !fixed.contains(name) && validStopNames.contains(name) {
+                if let stop = try? container.decode(ShuttleStopData.self, forKey: key) {
+                    details[name] = stop
+                }
             }
         }
         stopDetails = details
     }
-    
+
+    // Encoding logic preserved for caching
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: AnyKey.self)
-        
-        // Encode fixed keys
+
         try container.encode(color, forKey: AnyKey(stringValue: FixedKeys.color.rawValue)!)
         try container.encode(stops, forKey: AnyKey(stringValue: FixedKeys.stops.rawValue)!)
         try container.encode(polylineStops, forKey: AnyKey(stringValue: FixedKeys.polylineStops.rawValue)!)
         try container.encode(routes, forKey: AnyKey(stringValue: FixedKeys.routes.rawValue)!)
-        
-        // Encode dynamic stop keys
+
         for (name, stop) in stopDetails {
             try container.encode(stop, forKey: AnyKey(stringValue: name)!)
         }
     }
 }
 
+// Top level alias
 typealias ShuttleRouteData = [String: RouteDirectionData]

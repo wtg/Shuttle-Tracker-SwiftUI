@@ -6,22 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		D764F1A12F2D5B8B00BCCB03 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D764F1A02F2D5B8B00BCCB03 /* WidgetKit.framework */; };
-		D764F1A32F2D5B8B00BCCB03 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D764F1A22F2D5B8B00BCCB03 /* SwiftUI.framework */; };
-		D764F1B02F2D5B8D00BCCB03 /* ShuttleWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D764F19E2F2D5B8B00BCCB03 /* ShuttleWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		D764F1AE2F2D5B8D00BCCB03 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D93B977B2E846934009BA1CB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D764F19D2F2D5B8B00BCCB03;
-			remoteInfo = ShuttleWidgetExtension;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		D764F1B12F2D5B8D00BCCB03 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -29,7 +13,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				D764F1B02F2D5B8D00BCCB03 /* ShuttleWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,62 +20,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D764F19E2F2D5B8B00BCCB03 /* ShuttleWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShuttleWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D764F1A02F2D5B8B00BCCB03 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D764F1A22F2D5B8B00BCCB03 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		D93B97832E846934009BA1CB /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D989845D2E850B7100388E28 /* iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iOS.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D764F1B42F2D5B8D00BCCB03 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = D764F19D2F2D5B8B00BCCB03 /* ShuttleWidgetExtension */;
-		};
-		D764F1B72F2D613A00BCCB03 /* Exceptions for "Shared" folder in "ShuttleWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				API/API.swift,
-				"Map Utilities/ColorExtension.swift",
-				Models/ShuttleStopData.swift,
-				Models/VehicleLocationData.swift,
-			);
-			target = D764F19D2F2D5B8B00BCCB03 /* ShuttleWidgetExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D764F1A42F2D5B8B00BCCB03 /* ShuttleWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D764F1B42F2D5B8D00BCCB03 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidgetExtension" target */,
-			);
-			path = ShuttleWidget;
-			sourceTree = "<group>";
-		};
 		D93B97852E846934009BA1CB /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D764F1B72F2D613A00BCCB03 /* Exceptions for "Shared" folder in "ShuttleWidgetExtension" target */,
-			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D764F19B2F2D5B8B00BCCB03 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D764F1A32F2D5B8B00BCCB03 /* SwiftUI.framework in Frameworks */,
-				D764F1A12F2D5B8B00BCCB03 /* WidgetKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D93B97802E846934009BA1CB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,7 +59,6 @@
 			children = (
 				D989845E2E850CBA00388E28 /* iOS */,
 				D93B97852E846934009BA1CB /* Shared */,
-				D764F1A42F2D5B8B00BCCB03 /* ShuttleWidget */,
 				D764F19F2F2D5B8B00BCCB03 /* Frameworks */,
 				D93B97842E846934009BA1CB /* Products */,
 			);
@@ -127,7 +68,6 @@
 			isa = PBXGroup;
 			children = (
 				D93B97832E846934009BA1CB /* iOS.app */,
-				D764F19E2F2D5B8B00BCCB03 /* ShuttleWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -143,28 +83,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D764F19D2F2D5B8B00BCCB03 /* ShuttleWidgetExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D764F1B52F2D5B8D00BCCB03 /* Build configuration list for PBXNativeTarget "ShuttleWidgetExtension" */;
-			buildPhases = (
-				D764F19A2F2D5B8B00BCCB03 /* Sources */,
-				D764F19B2F2D5B8B00BCCB03 /* Frameworks */,
-				D764F19C2F2D5B8B00BCCB03 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				D764F1A42F2D5B8B00BCCB03 /* ShuttleWidget */,
-			);
-			name = ShuttleWidgetExtension;
-			packageProductDependencies = (
-			);
-			productName = ShuttleWidgetExtension;
-			productReference = D764F19E2F2D5B8B00BCCB03 /* ShuttleWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		D93B97822E846934009BA1CB /* iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D93B978E2E846935009BA1CB /* Build configuration list for PBXNativeTarget "iOS" */;
@@ -177,7 +95,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D764F1AF2F2D5B8D00BCCB03 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D93B97852E846934009BA1CB /* Shared */,
@@ -199,9 +116,6 @@
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
-					D764F19D2F2D5B8B00BCCB03 = {
-						CreatedOnToolsVersion = 16.0;
-					};
 					D93B97822E846934009BA1CB = {
 						CreatedOnToolsVersion = 26.0;
 					};
@@ -222,19 +136,11 @@
 			projectRoot = "";
 			targets = (
 				D93B97822E846934009BA1CB /* iOS */,
-				D764F19D2F2D5B8B00BCCB03 /* ShuttleWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D764F19C2F2D5B8B00BCCB03 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D93B97812E846934009BA1CB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -245,13 +151,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D764F19A2F2D5B8B00BCCB03 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D93B977F2E846934009BA1CB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -261,74 +160,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		D764F1AF2F2D5B8D00BCCB03 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D764F19D2F2D5B8B00BCCB03 /* ShuttleWidgetExtension */;
-			targetProxy = D764F1AE2F2D5B8D00BCCB03 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		D764F1B22F2D5B8D00BCCB03 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = AGQ8M5M9LP;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ShuttleWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = ShuttleWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.rpi.shuttles.ShuttleWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		D764F1B32F2D5B8D00BCCB03 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = AGQ8M5M9LP;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ShuttleWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = ShuttleWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = edu.rpi.shuttles.ShuttleWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 		D93B978C2E846935009BA1CB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -548,15 +380,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D764F1B52F2D5B8D00BCCB03 /* Build configuration list for PBXNativeTarget "ShuttleWidgetExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D764F1B22F2D5B8D00BCCB03 /* Debug */,
-				D764F1B32F2D5B8D00BCCB03 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		D93B977E2E846934009BA1CB /* Build configuration list for PBXProject "Shuttle Tracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
