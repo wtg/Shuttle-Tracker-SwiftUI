@@ -29,7 +29,6 @@ class VehicleService: ObservableObject {
 
     // Fetches the locations, velocities, and ETAs in parallel then merges them
     func refreshVehicles() async {
-        print("Refreshing vehicle data")
         do {
             async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
             async let velocitiesMap = client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
@@ -63,7 +62,6 @@ class VehicleService: ObservableObject {
                 mergedVehicles.append(vehicle)
             }
 
-            print("Refreshed Vehicles (\(mergedVehicles.count)):") // prints out 2
             self.vehicles = mergedVehicles
         } catch {
             logger.error("Failed to refresh vehicles: \(error.localizedDescription)")

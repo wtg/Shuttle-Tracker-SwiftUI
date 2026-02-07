@@ -15,7 +15,7 @@ struct ShuttleTrackerApp: App {
     @Environment(\.scenePhase) var scenePhase
     var body: some Scene {
         WindowGroup {
-            MapView()
+            MapView(locationManager: container.locationManager)
                 .environmentObject(container)
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
@@ -24,9 +24,4 @@ struct ShuttleTrackerApp: App {
             }
         }
     }
-}
-
-#Preview {
-    MapView()
-        .environmentObject(DependencyContainer.preview)
 }

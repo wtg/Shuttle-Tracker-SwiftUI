@@ -32,7 +32,7 @@ class RouteService: ObservableObject {
 
         // only refresh the data if it's a new day.
         // we don't need to be refreshing the schedule on a timer.
-        Task { self.checkForRefresh() }
+        self.checkForRefresh()
 
         // creates a trigger for significant time changes (i.e. midnight)
         NotificationCenter.default.addObserver(
@@ -42,6 +42,10 @@ class RouteService: ObservableObject {
         ) { [weak self] _ in
             Task { await self?.checkForRefresh(force: true) }
         }
+    }
+
+    func getRoute(named name: String) -> RouteDirectionData? {
+        return allRoutes[name]
     }
 
     // should be called from the view when forcing a refresh

@@ -34,5 +34,3 @@ struct VehicleLocationData: Identifiable {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
-
-typealias VehicleInformationMap = [String: VehicleLocationData]
