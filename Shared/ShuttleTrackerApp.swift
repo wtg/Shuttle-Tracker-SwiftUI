@@ -20,6 +20,7 @@ struct ShuttleTrackerApp: App {
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
+                // handles update on initial launch and returning from background
                 container.routeService.checkForRefresh()
             }
         }

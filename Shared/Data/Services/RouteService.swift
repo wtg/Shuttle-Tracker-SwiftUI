@@ -30,9 +30,7 @@ class RouteService: ObservableObject {
     init() {
         loadFromCache()
 
-        // only refresh the data if it's a new day.
-        // we don't need to be refreshing the schedule on a timer.
-        self.checkForRefresh()
+        // checkForRefresh is called on scene change in entrypoint
 
         // creates a trigger for significant time changes (i.e. midnight)
         NotificationCenter.default.addObserver(
