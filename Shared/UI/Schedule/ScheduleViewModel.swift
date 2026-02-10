@@ -182,7 +182,6 @@ class ScheduleViewModel: ObservableObject {
         let isoFormatterStandard = ISO8601DateFormatter()
         isoFormatterStandard.formatOptions = [.withInternetDateTime]
 
-        print("\(vehicleService.vehicles)")
         for vehicle in vehicleService.vehicles {
             for (stopKey, timeString) in vehicle.stopEtaTimes {
                 var parsedDate: Date? = isoFormatterFractional.date(from: timeString)

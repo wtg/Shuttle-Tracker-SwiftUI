@@ -109,12 +109,12 @@ struct MapDataLayer: View {
                         }
                     }
                     // draw Stops
-                    ForEach(Array(routeData.stopDetails), id: \.key) { stopName, stop in
-                        if stop.coordinates.count == 2 {
+                    ForEach(routeData.stops, id: \.self) { stopKey in
+                        if let stop = routeData.stopDetails[stopKey], stop.coordinates.count == 2 {
                             Annotation(
-                                stop.name,
-                                coordinate: CLLocationCoordinate2D(latitude: stop.coordinates[0], longitude: stop.coordinates[1])
-                            ) {
+                                    stop.name,
+                                    coordinate: CLLocationCoordinate2D(latitude: stop.coordinates[0], longitude: stop.coordinates[1])
+                                    ) {
                                 StopAnnotationView(colorHex: routeData.color)
                             }
                         }
