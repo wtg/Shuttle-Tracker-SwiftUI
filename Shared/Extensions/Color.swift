@@ -11,7 +11,6 @@ extension Color {
         guard let name = routeName?.uppercased() else { return .gray }
         if name.contains("NORTH") { return .red }
         if name.contains("WEST") { return .blue }
-        if name.contains("EAST") { return .green }
         return .gray
     }
 

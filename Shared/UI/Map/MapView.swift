@@ -58,7 +58,7 @@ struct MapView: View {
                 }
                 Spacer()
                 // bottom sheet
-                ScheduleAndEtaView()
+                ScheduleAndEtaButtonView()
             }
         }
         .sheet(isPresented: $viewModel.showSettings) {

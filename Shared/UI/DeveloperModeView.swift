@@ -72,11 +72,11 @@ struct DeveloperModeView: View {
 
                                     Text("Current Stop: \(vehicle.currentStop ?? "None")")
 
-                                    if vehicle.stopTimes.isEmpty {
+                                    if vehicle.stopEtaTimes.isEmpty {
                                         Text("No ETA data")
                                             .italic()
                                     } else {
-                                        ForEach(vehicle.stopTimes.sorted(by: { $0.key < $1.key }), id: \.key) { stop, time in
+                                        ForEach(vehicle.stopEtaTimes.sorted(by: { $0.key < $1.key }), id: \.key) { stop, time in
                                             Text("\(stop): \(time)")
                                         }
                                     }

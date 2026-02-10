@@ -57,7 +57,7 @@ class VehicleService: ObservableObject {
                     currentStop: velocity?.currentStop ?? nil,
 
                     // etas
-                    stopTimes: eta?.stopTimes ?? [:]
+                    stopEtaTimes: eta?.stopEtaTimes ?? [:]
                 )
                 mergedVehicles.append(vehicle)
             }

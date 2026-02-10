@@ -11,7 +11,7 @@ import Foundation
 struct ShuttleStopData: Codable {
     let coordinates: [Double]
     let offset: Int
-    let name: String
+    let name: String // formatted stop names "Student Union"
     enum CodingKeys: String, CodingKey {
         case coordinates = "COORDINATES"
         case offset = "OFFSET"
@@ -21,11 +21,10 @@ struct ShuttleStopData: Codable {
 
 struct RouteDirectionData: Codable {
     let color: String
-    let stops: [String]
+    let stops: [String] // non-formatted stop names (STUDENT_UNION)
     let polylineStops: [String]
     let routes: [[[Double]]]
-    let stopDetails: [String: ShuttleStopData] // Dynamic stop objects by name
-
+    let stopDetails: [String: ShuttleStopData] // dynamic stop objects by name ("STUDENT_UNION" -> {coords,offset,name})
     private enum FixedKeys: String, CodingKey {
         case color = "COLOR"
         case stops = "STOPS"

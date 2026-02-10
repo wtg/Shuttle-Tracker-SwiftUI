@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ScheduleAndEtaView: View {
+struct ScheduleAndEtaButtonView: View {
     @State private var showSheet: Bool = false
     @EnvironmentObject var container: DependencyContainer
     var body: some View {
@@ -40,16 +40,29 @@ struct ScheduleAndEtaView: View {
             showSheet = true
         }
         .sheet(isPresented: $showSheet) {
-            ScheduleView(viewModel: ScheduleViewModel(
-                scheduleService: container.scheduleService,
-                routeService: container.routeService
-            ))
+            TabView {
+                ScheduleView(
+                    viewModel: ScheduleViewModel(
+                        scheduleService: container.scheduleService,
+                        routeService: container.routeService,
+                        vehicleService: container.vehicleService
+                    )
+                ).tabItem { Label("Schedule", systemImage: "clock") }
+
+                ETAListView(
+                    viewModel: ScheduleViewModel(
+                        scheduleService: container.scheduleService,
+                        routeService: container.routeService,
+                        vehicleService: container.vehicleService
+                    )
+                ).tabItem { Label("ETAs", systemImage: "bus") }
+            }
             .presentationDetents([.medium, .large])
         }
     }
 }
 
 #Preview {
-    ScheduleAndEtaView()
+    ScheduleAndEtaButtonView()
         .environmentObject(DependencyContainer.preview)
 }

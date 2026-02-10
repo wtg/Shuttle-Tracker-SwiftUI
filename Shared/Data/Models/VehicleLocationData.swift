@@ -9,6 +9,7 @@ import Foundation
 import CoreLocation
 
 // aggregates data from /locations, /velocities, and /etas
+// filled within VehicleService.refreshVehicles
 struct VehicleLocationData: Identifiable {
     var id: String { name } // for ForEach loops
 
@@ -27,7 +28,7 @@ struct VehicleLocationData: Identifiable {
     let currentStop: String?
 
     // from /etas
-    let stopTimes: [String: String]
+    let stopEtaTimes: [String: String]
 
     // helper
     var coordinate: CLLocationCoordinate2D {

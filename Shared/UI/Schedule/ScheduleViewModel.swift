@@ -11,24 +11,33 @@ class ScheduleViewModel: ObservableObject {
     // dependencies
     private let scheduleService: ScheduleService
     private let routeService: RouteService
+    private let vehicleService: VehicleService
+
     private var cancellables = Set<AnyCancellable>()
 
-    private let dateFormatter: DateFormatter = {
+    let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
 
-    init(scheduleService: ScheduleService, routeService: RouteService) {
+    init(scheduleService: ScheduleService, routeService: RouteService, vehicleService: VehicleService) {
         self.scheduleService = scheduleService
         self.routeService = routeService
+        self.vehicleService = vehicleService
+
         self.selectedDay = DayOfWeek.from(date: Date())
 
         // refresh the selection view every time the schedule updates
         scheduleService.$scheduleData
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshSelection() }
+            .store(in: &cancellables)
+
+        vehicleService.$vehicles
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }
 
@@ -161,13 +170,73 @@ class ScheduleViewModel: ObservableObject {
         }
         return stops
     }
+
+    private func getShortestETAs() -> [StopETA] {
+        // map to store the soonest ETA found so far for each unique stop key
+        var shortestEtas: [String: StopETA] = [:]
+        let now = Date()
+
+        // the API sometimes returns timestamps with fractional seconds and sometimes without, TODO: ask backend to standardize
+        let isoFormatterFractional = ISO8601DateFormatter()
+        isoFormatterFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let isoFormatterStandard = ISO8601DateFormatter()
+        isoFormatterStandard.formatOptions = [.withInternetDateTime]
+
+        print("\(vehicleService.vehicles)")
+        for vehicle in vehicleService.vehicles {
+            for (stopKey, timeString) in vehicle.stopEtaTimes {
+                var parsedDate: Date? = isoFormatterFractional.date(from: timeString)
+                if parsedDate == nil {
+                    parsedDate = isoFormatterStandard.date(from: timeString)
+                }
+                guard let etaDate = parsedDate, etaDate > now else { continue }
+
+                // Resolve the human-readable stop name via the routedata stopDetails map
+                var currentStopName = stopKey // fallback to key if name lookup fails
+                if let route = routeService.getRoute(named: vehicle.routeName),
+                    let details = route.stopDetails[stopKey] {
+                    currentStopName = details.name
+                }
+
+                let newETA = StopETA(
+                        stopKey: stopKey,
+                        stopName: currentStopName,
+                        routeName: vehicle.routeName,
+                        etaDate: etaDate,
+                        vehicleName: vehicle.name
+                        )
+
+                let routeStopKey = stopKey + "_" + vehicle.routeName
+
+                if let existing = shortestEtas[routeStopKey] {
+                    if newETA.etaDate < existing.etaDate {
+                        shortestEtas[routeStopKey] = newETA
+                    }
+                } else {
+                    shortestEtas[routeStopKey] = newETA
+                }
+            }
+        }
+        return Array(shortestEtas.values).sorted { $0.etaDate < $1.etaDate }
+    }
+
+    func getGroupedETAs() -> [EtasForRoute] {
+        let allEtas = getShortestETAs()
+        let grouped = Dictionary(grouping: allEtas) { $0.routeName }
+        let sections = grouped.map { (routeName, etas) -> EtasForRoute in
+            let sortedETAs = etas.sorted { $0.etaDate < $1.etaDate }
+            let routeColor = routeService.getRoute(named: routeName)?.color ?? "#000000"
+            return EtasForRoute(id: routeName, color: routeColor, etas: sortedETAs)
+        }
+        return sections.sorted { $0.id < $1.id }
+    }
 }
 
 // helper types
 struct StopScheduleItem: Identifiable {
     var id: String { name }
     let name: String
-        let time: String
+    let time: String
 }
 
 struct TimeInfo: Hashable, Identifiable {
@@ -177,6 +246,21 @@ struct TimeInfo: Hashable, Identifiable {
     let busName: String
     let date: Date
     let sortValue: Int
+}
+
+struct EtasForRoute: Identifiable {
+    let id: String
+    let color: String
+    let etas: [StopETA]
+}
+struct StopETA: Identifiable {
+    // stopName, routeName, etaDate, vehicleName
+    var id: String { stopKey + routeName }
+    let stopKey: String
+    let stopName: String
+    let routeName: String
+    let etaDate: Date
+    let vehicleName: String
 }
 
 enum DayOfWeek: String, CaseIterable, Identifiable {

@@ -36,8 +36,8 @@ struct VehicleVelocityDTO: Decodable {
 // /api/etas
 struct VehicleETADTO: Decodable {
     // Stop Name -> ISO Date String
-    let stopTimes: [String: String]
+    let stopEtaTimes: [String: String]
     enum CodingKeys: String, CodingKey {
-        case stopTimes = "stop_times"
+        case stopEtaTimes = "stop_times"
     }
 }
