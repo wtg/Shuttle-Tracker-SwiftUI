@@ -9,7 +9,7 @@ struct ETAListView: View {
                 ForEach(viewModel.getGroupedETAs()) { section in
                     Section {
                         ForEach(section.etas) { eta in
-                            EtaRow(eta: eta, dateFormatter: viewModel.dateFormatter)
+                            EtaRow(eta: eta)
                         }
                     } header: {
                         HStack {
@@ -44,7 +44,6 @@ struct ETAListView: View {
 
 struct EtaRow: View {
     let eta: StopETA
-    let dateFormatter: DateFormatter
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -62,7 +61,7 @@ struct EtaRow: View {
             }
             Spacer()
             VStack(alignment: .trailing) {
-                Text(dateFormatter.string(from: eta.etaDate))
+                Text(eta.etaDate.formattedTime)
                     .font(.body.monospacedDigit())
                     .fontWeight(.bold)
                     .foregroundStyle(Color.forRoute(eta.routeName))

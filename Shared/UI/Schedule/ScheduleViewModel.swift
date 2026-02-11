@@ -15,13 +15,6 @@ class ScheduleViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
-
     init(scheduleService: ScheduleService, routeService: RouteService, vehicleService: VehicleService) {
         self.scheduleService = scheduleService
         self.routeService = routeService
@@ -119,7 +112,7 @@ class ScheduleViewModel: ObservableObject {
                     let timeStr = timePair[0]
                     let dirStr = timePair[1]
 
-                    if dirStr == direction, let date = dateFormatter.date(from: timeStr) {
+                    if dirStr == direction, let date = timeStr.simpleTimeToDate {
                         let itemComponents = calendar.dateComponents([.hour, .minute], from: date)
                         let rawItemMinutes = (itemComponents.hour ?? 0) * 60 + (itemComponents.minute ?? 0)
                         let itemMinutesAdjusted = rawItemMinutes < 180 ? rawItemMinutes + 1440 : rawItemMinutes
@@ -163,7 +156,7 @@ class ScheduleViewModel: ObservableObject {
                 if let stopDate = calendar.date(byAdding: .minute, value: stopDetails.offset, to: run.date) {
                     stops.append(StopScheduleItem(
                         name: stopDetails.name,
-                        time: dateFormatter.string(from: stopDate)
+                        time: stopDate.formattedTime
                     ))
                 }
             }
@@ -184,11 +177,7 @@ class ScheduleViewModel: ObservableObject {
 
         for vehicle in vehicleService.vehicles {
             for (stopKey, timeString) in vehicle.stopEtaTimes {
-                var parsedDate: Date? = isoFormatterFractional.date(from: timeString)
-                if parsedDate == nil {
-                    parsedDate = isoFormatterStandard.date(from: timeString)
-                }
-                guard let etaDate = parsedDate, etaDate > now else { continue }
+                guard let etaDate = timeString.isoTimeToDate, etaDate > now else { continue }
 
                 // Resolve the human-readable stop name via the routedata stopDetails map
                 var currentStopName = stopKey // fallback to key if name lookup fails

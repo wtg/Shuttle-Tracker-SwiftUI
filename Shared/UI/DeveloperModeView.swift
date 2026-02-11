@@ -42,10 +42,6 @@ struct DeveloperModeView: View {
                                 Divider()
 
                                 Group {
-                                    Text("Location")
-                                        .font(.caption)
-                                        .bold()
-
                                     Text("Lat: \(vehicle.latitude)")
                                     Text("Lon: \(vehicle.longitude)")
                                     Text("Formatted: \(vehicle.formattedLocation)")
@@ -54,10 +50,6 @@ struct DeveloperModeView: View {
                                 .foregroundStyle(.secondary)
 
                                 Group {
-                                    Text("Motion")
-                                        .font(.caption)
-                                        .bold()
-
                                     Text("Speed: \(String(format: "%.1f", vehicle.speedMph)) mph")
                                     Text("Heading: \(Int(vehicle.headingDegrees))°")
                                     Text("At Stop: \(vehicle.isAtStop ? "Yes" : "No")")
@@ -66,18 +58,25 @@ struct DeveloperModeView: View {
                                 .foregroundStyle(.secondary)
 
                                 Group {
-                                    Text("Stops")
-                                        .font(.caption)
-                                        .bold()
 
                                     Text("Current Stop: \(vehicle.currentStop ?? "None")")
+
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                        Text("ETA Times").font(.caption).bold()
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                        Image(systemName: "chevron.down").font(.system(size: 8)).fontWeight(.bold)
+                                    }
 
                                     if vehicle.stopEtaTimes.isEmpty {
                                         Text("No ETA data")
                                             .italic()
                                     } else {
-                                        ForEach(vehicle.stopEtaTimes.sorted(by: { $0.key < $1.key }), id: \.key) { stop, time in
-                                            Text("\(stop): \(time)")
+                                        ForEach(vehicle.stopEtaTimes.sorted(by: { $0.key < $1.key }), id: \.key) { stop, dateStr in
+                                            Text("\(stop): \(dateStr.formattedTime)")
                                         }
                                     }
                                 }
