@@ -10,6 +10,10 @@ A SwiftUI application for tracking shuttle bus locations and schedules in real-t
 *   **iOS Widget:** See shuttle information at a glance on your home screen.
 *   **Developer Mode:** For debugging and development purposes.
 
+![Main Screen](docs/map.png)
+![Schedule View](docs/schedule.png)
+![Live Eta View](docs/live-etas.png)
+
 ### Architecture
 1. Models
     - Separating concerns between data transfer objects and UI components. Particularly relevent for structs that are storing data from the API.
