@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import Combine
 
 @MainActor
 class MapViewModel: ObservableObject {

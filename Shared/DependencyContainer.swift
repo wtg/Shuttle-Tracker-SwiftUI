@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 // container to hold the app's core services.
 // allows us to avoid redundant definitions/operations throughout the codebase
