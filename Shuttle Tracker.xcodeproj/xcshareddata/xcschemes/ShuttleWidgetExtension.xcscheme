@@ -16,7 +16,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D764F19D2F2D5B8B00BCCB03"
+               BlueprintIdentifier = "D7FCEE2D2F476CC100FD7929"
                BuildableName = "ShuttleWidgetExtension.appex"
                BlueprintName = "ShuttleWidgetExtension"
                ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
@@ -62,7 +62,7 @@
          BundleIdentifier = "com.apple.springboard">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D764F19D2F2D5B8B00BCCB03"
+            BlueprintIdentifier = "D7FCEE2D2F476CC100FD7929"
             BuildableName = "ShuttleWidgetExtension.appex"
             BlueprintName = "ShuttleWidgetExtension"
             ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
