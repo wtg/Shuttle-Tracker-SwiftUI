@@ -35,3 +35,38 @@ struct VehicleLocationData: Identifiable {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
+
+enum VehicleDTOMerger {
+    // merges the separate API DTOs into a VehicleLocationData array.
+    static func merge(
+        locations: [String: VehicleLocationDTO],
+        velocities: [String: VehicleVelocityDTO]? = nil,
+        etas: [String: VehicleETADTO]? = nil
+    ) -> [VehicleLocationData] {
+        var mergedVehicles: [VehicleLocationData] = []
+        for (id, loc) in locations {
+            let velocity = velocities?[id]
+            let eta = etas?[id]
+            let vehicle = VehicleLocationData(
+                // location
+                name: loc.name,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                headingDegrees: loc.headingDegrees,
+                speedMph: loc.speedMph,
+                timestamp: loc.timestamp,
+                formattedLocation: loc.formattedLocation,
+
+                // velocities
+                routeName: velocity?.routeName ?? "unknown",
+                isAtStop: velocity?.isAtStop ?? false,
+                currentStop: velocity?.currentStop,
+
+                // etas
+                stopEtaTimes: eta?.stopEtaTimes ?? [:]
+            )
+            mergedVehicles.append(vehicle)
+        }
+        return mergedVehicles.sorted { $0.name < $1.name }
+    }
+}
