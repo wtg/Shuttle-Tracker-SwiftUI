@@ -55,6 +55,8 @@
 		D7FCEE422F476CF500FD7929 /* Exceptions for "Shared" folder in "ShuttleWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Data/Models/RouteData.swift,
+				Data/Models/ScheduleData.swift,
 				Data/Models/VehicleLocationData.swift,
 				Data/Models/VehicleResponseModels.swift,
 				Data/Networking/APIClient.swift,

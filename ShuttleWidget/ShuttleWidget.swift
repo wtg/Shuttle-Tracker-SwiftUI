@@ -4,15 +4,19 @@ import SwiftUI
 struct ShuttleWidgetEntry: TimelineEntry {
     let date: Date
     let activeShuttles: [VehicleLocationData]
+    let nextScheduledArrival: Date?
 }
+/* hardcoded for now */
+let targetStopKey = "STUDENT_UNION"
 
 struct ShuttleWidgetProvider: TimelineProvider {
+
     func placeholder(in context: Context) -> ShuttleWidgetEntry {
-        ShuttleWidgetEntry(date: Date(), activeShuttles: [])
+        ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: Date())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ShuttleWidgetEntry) -> ()) {
-        let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [])
+        let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil)
         completion(entry)
     }
 
@@ -20,18 +24,30 @@ struct ShuttleWidgetProvider: TimelineProvider {
         Task {
             do {
                 let client = APIClient.shared
+
                 async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
                 async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
+                async let etasMap = try? client.fetch([String: VehicleETADTO].self, endpoint: .vehicleEtas)
+                async let routesData = try? client.fetch(ShuttleRouteData.self, endpoint: .routes)
+                async let scheduleData = try? client.fetch(ScheduleData.self, endpoint: .schedule)
 
-                let (locations, velocities) = try await (locationsMap, velocitiesMap)
-                let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities)
+                let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
+                let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+                // let relevantShuttles = vehicles.filter { $0.stopEtaTimes.keys.contains(targetStopKey) }
+                let relevantShuttles = vehicles /* ETA endpoint isn't active, so simply use this for now */
 
-                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: vehicles)
+                var nextArrival: Date? = nil
+                if let schedule = schedule, let routes = routes {
+                    nextArrival = calculateNextScheduledArrival(for: targetStopKey, schedule: schedule, routes: routes)
+                }
+
+                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: relevantShuttles, nextScheduledArrival: nextArrival)
                 let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
                 let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
                 completion(timeline)
             } catch {
-                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [])
+                print("FAILED WIDGET FETCH: \(error)")
+                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil)
                 let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
                 let timeline = Timeline(entries: [entry], policy: .after(retryDate))
                 completion(timeline)
@@ -40,43 +56,124 @@ struct ShuttleWidgetProvider: TimelineProvider {
     }
 }
 
-struct ShuttleWidgetEntryView: View {
-    var entry: ShuttleWidgetProvider.Entry
-    var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack {
-                Image(systemName: "bus.fill")
-                Text("Active Shuttles: \(entry.activeShuttles.count)")
-                    .font(.headline)
+private func calculateNextScheduledArrival(for targetStopKey: String, schedule: ScheduleData, routes: ShuttleRouteData) -> Date? {
+    let calendar = Calendar.current
+    let now = Date()
+    let weekday = calendar.component(.weekday, from: now)
+
+    let scheduleMap: [String: [[String]]]
+    if weekday == 1 { scheduleMap = schedule.sundaySchedule }
+    else if weekday == 7 { scheduleMap = schedule.saturdaySchedule }
+    else { scheduleMap = schedule.weekday }
+
+    var nextDate: Date? = nil
+    for (_, times) in scheduleMap {
+        for timePair in times {
+            guard timePair.count >= 2 else { continue }
+            let timeStr = timePair[0]
+            let routeName = timePair[1]
+
+            guard let baseDate = timeStr.simpleTimeToDate else { continue }
+            let baseComponents = calendar.dateComponents([.hour, .minute], from: baseDate)
+            guard let todayBaseDate = calendar.date(bySettingHour: baseComponents.hour ?? 0, minute: baseComponents.minute ?? 0, second: 0, of: now) else { continue }
+
+            guard let routeData = routes[routeName], let stopDetails = routeData.stopDetails[targetStopKey] else { continue }
+            let arrivalDate = calendar.date(byAdding: .minute, value: stopDetails.offset, to: todayBaseDate)!
+
+            // hour wrapping
+            var validArrivalDate = arrivalDate
+            if calendar.component(.hour, from: arrivalDate) < 4 && calendar.component(.hour, from: now) >= 18 {
+                validArrivalDate = calendar.date(byAdding: .day, value: 1, to: arrivalDate)!
             }
-            Divider()
-            if entry.activeShuttles.isEmpty {
-                Text("No shuttles running right now.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(entry.activeShuttles.prefix(2)) { vehicle in
-                    HStack {
-                        Circle()
-                            .fill(Color.forRoute(vehicle.routeName))
-                            .frame(width: 8, height: 8)
-                        VStack(alignment: .leading) {
-                            Text(vehicle.name)
-                                .font(.subheadline)
-                                .bold()
-                            Text(vehicle.formattedLocation)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                            Text("\(vehicle.speedMph) mph")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+
+            // closest future time
+            if validArrivalDate > now {
+                if nextDate == nil || validArrivalDate < nextDate! {
+                    nextDate = validArrivalDate
                 }
             }
-            Spacer(minLength: 0)
         }
-        .padding()
+    }
+    return nextDate
+}
+
+struct ShuttleWidgetEntryView: View {
+    var entry: ShuttleWidgetProvider.Entry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .bottom) {
+                Text("target stop: \(targetStopKey)")
+                    .font(.system(size: 9, weight: .bold))
+                    .bold()
+                    .lineLimit(1)
+                Spacer()
+                HStack(spacing: 4) {
+                    Text("Last updated:")
+                    Text(entry.date, style: .time)
+                }
+                .font(.system(size:10, weight: .bold))
+                .foregroundStyle(.secondary)
+            }
+            Divider()
+            /* NOTE: the isAtStop, ETA, routeName, etc are not active endpoints so
+               some displayed data is wrong, but should work once the endpoints are restored */
+            ForEach(entry.activeShuttles.prefix(6)) { vehicle in
+                HStack(spacing: 6) {
+                    Capsule()
+                        .fill(Color.forRoute(vehicle.routeName))
+                        .frame(width: 4, height: 16)
+                    Text(vehicle.name)
+                        .font(.system(size: 11, weight: .bold))
+                        .frame(width: 45, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("\(vehicle.speedMph, specifier: "%.1f") mph")
+                        if vehicle.isAtStop {
+                            Text("AT: \(vehicle.currentStop?.prefix(6) ?? "?")..")
+                                .foregroundStyle(.red)
+                        } else {
+                            Text("MOVING")
+                                .foregroundStyle(.green)
+                        }
+                    }
+                    .font(.system(size: 9))
+                    .frame(width: 60, alignment: .leading)
+                    Text(vehicle.formattedLocation).font(.system(size: 8))
+                    Spacer(minLength: 0)
+                    if let etaStr = vehicle.stopEtaTimes[targetStopKey] {
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text("ETA")
+                                .font(.system(size: 8))
+                                .foregroundStyle(.secondary)
+                            Text(etaStr.formattedTime)
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        }
+                    } else {
+                        Text("NO ETA")
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 2)
+                Divider().opacity(0.5)
+            }
+            Spacer(minLength: 0)
+            HStack {
+                Text("Next Scheduled:")
+                    .font(.caption2)
+                Spacer()
+                if let next = entry.nextScheduledArrival {
+                    Text(next, style: .time)
+                        .font(.caption.bold())
+                } else {
+                    Text("None")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .foregroundStyle(.secondary)
+        }
+        .padding(6)
         .containerBackground(Color(uiColor: .systemBackground), for: .widget)
     }
 }
