@@ -1,57 +1,86 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
+
+let defaultTargetKey = "STUDENT_UNION"
+let defaultTargetDisplay = "Student Union"
+
+struct TargetStopIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Target Stop"
+    static var description = IntentDescription("Select which stop to track.")
+    @Parameter(title: "Stop", default: ShuttleStop(id: defaultTargetKey, displayString: defaultTargetDisplay))
+    var stop: ShuttleStop?
+}
 
 struct ShuttleWidgetEntry: TimelineEntry {
     let date: Date
     let activeShuttles: [VehicleLocationData]
     let nextScheduledArrival: Date?
+    let targetStopKey: String
+    let targetStopName: String
 }
-/* hardcoded for now */
-let targetStopKey = "STUDENT_UNION"
 
-struct ShuttleWidgetProvider: TimelineProvider {
+struct ShuttleWidgetProvider: AppIntentTimelineProvider {
 
     func placeholder(in context: Context) -> ShuttleWidgetEntry {
-        ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: Date())
+        ShuttleWidgetEntry(
+            date: Date(),
+            activeShuttles: [],
+            nextScheduledArrival: Date(),
+            targetStopKey: defaultTargetKey,
+            targetStopName: defaultTargetDisplay
+        )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (ShuttleWidgetEntry) -> ()) {
-        let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil)
-        completion(entry)
+    func snapshot(for configuration: TargetStopIntent, in context: Context) async -> ShuttleWidgetEntry {
+        let stopKey = configuration.stop?.id ?? defaultTargetKey
+        let stopName = configuration.stop?.displayString ?? defaultTargetDisplay
+        return ShuttleWidgetEntry(
+            date: Date(),
+            activeShuttles: [],
+            nextScheduledArrival: nil,
+            targetStopKey: stopKey,
+            targetStopName: stopName
+        )
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<ShuttleWidgetEntry>) -> ()) {
-        Task {
-            do {
-                let client = APIClient.shared
+    func timeline(for configuration: TargetStopIntent, in context: Context) async -> Timeline<ShuttleWidgetEntry> {
+        let targetStopKey = configuration.stop?.id ?? defaultTargetKey
+        let targetStopName = configuration.stop?.displayString ?? defaultTargetDisplay
 
-                async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
-                async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
-                async let etasMap = try? client.fetch([String: VehicleETADTO].self, endpoint: .vehicleEtas)
-                async let routesData = try? client.fetch(ShuttleRouteData.self, endpoint: .routes)
-                async let scheduleData = try? client.fetch(ScheduleData.self, endpoint: .schedule)
+        do {
+            let client = APIClient.shared
 
-                let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
-                let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
-                // let relevantShuttles = vehicles.filter { $0.stopEtaTimes.keys.contains(targetStopKey) }
-                let relevantShuttles = vehicles /* ETA endpoint isn't active, so simply use this for now */
+            async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
+            async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
+            async let etasMap = try? client.fetch([String: VehicleETADTO].self, endpoint: .vehicleEtas)
+            async let routesData = try? client.fetch(ShuttleRouteData.self, endpoint: .routes)
+            async let scheduleData = try? client.fetch(ScheduleData.self, endpoint: .schedule)
 
-                var nextArrival: Date? = nil
-                if let schedule = schedule, let routes = routes {
-                    nextArrival = calculateNextScheduledArrival(for: targetStopKey, schedule: schedule, routes: routes)
-                }
+            let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
+            let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+            // let relevantShuttles = vehicles.filter { $0.stopEtaTimes.keys.contains(targetStopKey) }
+            let relevantShuttles = vehicles /* ETA endpoint isn't active, so simply use this for now */
 
-                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: relevantShuttles, nextScheduledArrival: nextArrival)
-                let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
-                let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-                completion(timeline)
-            } catch {
-                print("FAILED WIDGET FETCH: \(error)")
-                let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil)
-                let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
-                let timeline = Timeline(entries: [entry], policy: .after(retryDate))
-                completion(timeline)
+            var nextArrival: Date? = nil
+            if let schedule = schedule, let routes = routes {
+                nextArrival = calculateNextScheduledArrival(for: targetStopKey, schedule: schedule, routes: routes)
             }
+
+            let entry = ShuttleWidgetEntry(
+                date: Date(),
+                activeShuttles: relevantShuttles,
+                nextScheduledArrival: nextArrival,
+                targetStopKey: targetStopKey,
+                targetStopName: targetStopName
+            )
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
+            return Timeline(entries: [entry], policy: .after(nextUpdate))
+        } catch {
+            print("FAILED WIDGET FETCH: \(error)")
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, targetStopKey: targetStopKey, targetStopName: targetStopName)
+            let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+            return Timeline(entries: [entry], policy: .after(retryDate))
         }
     }
 }
@@ -103,7 +132,7 @@ struct ShuttleWidgetEntryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .bottom) {
-                Text("target stop: \(targetStopKey)")
+                Text("target stop: \(entry.targetStopName)")
                     .font(.system(size: 9, weight: .bold))
                     .bold()
                     .lineLimit(1)
@@ -140,7 +169,7 @@ struct ShuttleWidgetEntryView: View {
                     .frame(width: 60, alignment: .leading)
                     Text(vehicle.formattedLocation).font(.system(size: 8))
                     Spacer(minLength: 0)
-                    if let etaStr = vehicle.stopEtaTimes[targetStopKey] {
+                    if let etaStr = vehicle.stopEtaTimes[entry.targetStopKey] {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("ETA")
                                 .font(.system(size: 8))
@@ -183,7 +212,7 @@ struct ShuttleWidget: Widget {
     let kind: String = "ShuttleWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: ShuttleWidgetProvider()) { entry in
+        AppIntentConfiguration(kind: kind, intent: TargetStopIntent.self, provider: ShuttleWidgetProvider()) { entry in
             ShuttleWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Shuttle Tracker")
