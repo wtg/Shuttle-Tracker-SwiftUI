@@ -61,8 +61,16 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             if targetStop.id == ShuttleStop.allStops.id {
                 groupedETAs = ETAProcessor.getGroupedETAs(vehicles: vehicles, routes: routes ?? [:])
             } else {
-                relevantShuttles = vehicles.filter { vehicle in return vehicle.soonestFutureEta(for: targetStop.lookupKeys) != nil }
                 // relevantShuttles = vehicles /* when ETA endpoint isn't active */
+                /* either heading towards the selected stop, or is currently there */
+                relevantShuttles = vehicles.filter { vehicle in
+                    let hasFutureEta = vehicle.soonestFutureEta(for: targetStop.lookupKeys) != nil
+                    var isCurrentlyHere = false
+                    if vehicle.isAtStop, let current = vehicle.currentStop {
+                        isCurrentlyHere = targetStop.lookupKeys.contains(current)
+                    }
+                    return hasFutureEta || isCurrentlyHere
+                }
                 if let schedule = schedule, let routes = routes {
                     nextArrival = calculateNextScheduledArrival(for: targetStop.id, schedule: schedule, routes: routes)
                 }
@@ -194,7 +202,7 @@ struct ShuttleWidgetEntryView: View {
                         .frame(width: 4, height: 16)
                     Text(vehicle.name)
                         .font(.system(size: 11, weight: .bold))
-                        .frame(width: 45, alignment: .leading)
+                        .frame(width: 30, alignment: .leading)
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(vehicle.speedMph, specifier: "%.1f") mph")
                         if vehicle.isAtStop {
@@ -209,7 +217,13 @@ struct ShuttleWidgetEntryView: View {
                     .frame(width: 60, alignment: .leading)
                     Text(vehicle.formattedLocation).font(.system(size: 8))
                     Spacer(minLength: 0)
-                    if let etaStr = vehicle.soonestFutureEta(for: entry.targetStop.lookupKeys) {
+                    if vehicle.isAtStop && entry.targetStop.lookupKeys.contains(vehicle.currentStop ?? "") {
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text("Now")
+                                .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                                .foregroundStyle(.green)
+                        }
+                    } else if let etaStr = vehicle.soonestFutureEta(for: entry.targetStop.lookupKeys) {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("ETA")
                                 .font(.system(size: 8))
