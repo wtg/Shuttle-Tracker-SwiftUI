@@ -4,6 +4,19 @@ import Foundation
 struct ShuttleStop: AppEntity {
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Shuttle Stop"
     static var defaultQuery = ShuttleStopQuery()
+
+    static let defaultStop = ShuttleStop(id: "STUDENT_UNION", displayString: "Student Union")
+    static let allStops = ShuttleStop(id: "ALL_STOPS", displayString: "All Routes & Stops")
+
+    var lookupKeys: [String] {
+        if id == "ALL_STOPS" { return [] }
+        /* we will recognize arrival and departure from student union as the same in terms of ETA */
+        if id == "STUDENT_UNION" || id == "STUDENT_UNION_RETURN" {
+            return ["STUDENT_UNION", "STUDENT_UNION_RETURN"]
+        }
+        return [id]
+    }
+
     var id: String              /* STUDENT_UNION */
     var displayString: String   /* Student Union */
     var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(displayString)") }
@@ -11,12 +24,15 @@ struct ShuttleStop: AppEntity {
 
 struct ShuttleStopQuery: EntityQuery {
     func entities(for identifiers: [String]) async throws -> [ShuttleStop] {
-        let allStops = await fetchAllStops()
+        var allStops = await fetchAllStops()
+        allStops.append(ShuttleStop.allStops)
         return allStops.filter { identifiers.contains($0.id) }
     }
 
     func suggestedEntities() async throws -> [ShuttleStop] {
-        return await fetchAllStops()
+        var stops = await fetchAllStops()
+        stops.insert(ShuttleStop.allStops, at: 0)
+        return stops
     }
 
     private func fetchAllStops() async -> [ShuttleStop] {
@@ -34,7 +50,7 @@ struct ShuttleStopQuery: EntityQuery {
         } catch {
             // fallback
             return [
-                ShuttleStop(id: "STUDENT_UNION", displayString: "Student Union"),
+                ShuttleStop.defaultStop,
                 ShuttleStop(id: "BLITMAN", displayString: "Blitman"),
                 ShuttleStop(id: "ECAV", displayString: "ECAV")
             ]

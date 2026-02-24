@@ -30,9 +30,31 @@ struct VehicleLocationData: Identifiable {
     // from /etas
     let stopEtaTimes: [String: String]
 
-    // helper
+    // helpers
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
+    // finds this vehicles eta stops that are in the future
+    var futureEtas: [String: String] {
+        let now = Date()
+        return stopEtaTimes.filter { _, timeString in
+            guard let etaDate = timeString.isoTimeToDate else { return false }
+            return etaDate > now
+        }
+    }
+
+    // finds this vehicle's nearest eta to a set of stops: ["STUDENT_UNION", "STUDENT_UNION_RETURN"]
+    func soonestFutureEta(for keys: [String]) -> String? {
+        let now = Date()
+        return keys
+            .compactMap { key -> (string: String, date: Date)? in
+                guard let timeStr = stopEtaTimes[key],
+                      let date = timeStr.isoTimeToDate, date > now else { return nil }
+                return (timeStr, date)
+            }
+            .min(by: { $0.date < $1.date })?
+            .string
     }
 }
 

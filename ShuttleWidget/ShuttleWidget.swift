@@ -2,22 +2,19 @@ import WidgetKit
 import SwiftUI
 import AppIntents
 
-let defaultTargetKey = "STUDENT_UNION"
-let defaultTargetDisplay = "Student Union"
-
 struct TargetStopIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "Target Stop"
     static var description = IntentDescription("Select which stop to track.")
-    @Parameter(title: "Stop", default: ShuttleStop(id: defaultTargetKey, displayString: defaultTargetDisplay))
+    @Parameter(title: "Stop", default: ShuttleStop.defaultStop)
     var stop: ShuttleStop?
 }
 
 struct ShuttleWidgetEntry: TimelineEntry {
     let date: Date
     let activeShuttles: [VehicleLocationData]
-    let nextScheduledArrival: Date?
-    let targetStopKey: String
-    let targetStopName: String
+    let nextScheduledArrival: Date? /* for single stop data */
+    let groupedETAs: [EtasForRoute] /* for All Stops data   */
+    let targetStop: ShuttleStop
 }
 
 struct ShuttleWidgetProvider: AppIntentTimelineProvider {
@@ -27,27 +24,24 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             date: Date(),
             activeShuttles: [],
             nextScheduledArrival: Date(),
-            targetStopKey: defaultTargetKey,
-            targetStopName: defaultTargetDisplay
+            groupedETAs: [],
+            targetStop: ShuttleStop.defaultStop
         )
     }
 
     func snapshot(for configuration: TargetStopIntent, in context: Context) async -> ShuttleWidgetEntry {
-        let stopKey = configuration.stop?.id ?? defaultTargetKey
-        let stopName = configuration.stop?.displayString ?? defaultTargetDisplay
+        let stop = configuration.stop ?? ShuttleStop.defaultStop
         return ShuttleWidgetEntry(
             date: Date(),
             activeShuttles: [],
             nextScheduledArrival: nil,
-            targetStopKey: stopKey,
-            targetStopName: stopName
+            groupedETAs: [],
+            targetStop: stop
         )
     }
 
     func timeline(for configuration: TargetStopIntent, in context: Context) async -> Timeline<ShuttleWidgetEntry> {
-        let targetStopKey = configuration.stop?.id ?? defaultTargetKey
-        let targetStopName = configuration.stop?.displayString ?? defaultTargetDisplay
-
+        let targetStop = configuration.stop ?? ShuttleStop.defaultStop
         do {
             let client = APIClient.shared
 
@@ -59,26 +53,33 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
 
             let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
             let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
-            // let relevantShuttles = vehicles.filter { $0.stopEtaTimes.keys.contains(targetStopKey) }
-            let relevantShuttles = vehicles /* ETA endpoint isn't active, so simply use this for now */
 
+            var relevantShuttles: [VehicleLocationData] = []
+            var groupedETAs: [EtasForRoute] = []
             var nextArrival: Date? = nil
-            if let schedule = schedule, let routes = routes {
-                nextArrival = calculateNextScheduledArrival(for: targetStopKey, schedule: schedule, routes: routes)
+
+            if targetStop.id == ShuttleStop.allStops.id {
+                groupedETAs = ETAProcessor.getGroupedETAs(vehicles: vehicles, routes: routes ?? [:])
+            } else {
+                relevantShuttles = vehicles.filter { vehicle in return vehicle.soonestFutureEta(for: targetStop.lookupKeys) != nil }
+                // relevantShuttles = vehicles /* when ETA endpoint isn't active */
+                if let schedule = schedule, let routes = routes {
+                    nextArrival = calculateNextScheduledArrival(for: targetStop.id, schedule: schedule, routes: routes)
+                }
             }
 
             let entry = ShuttleWidgetEntry(
                 date: Date(),
                 activeShuttles: relevantShuttles,
                 nextScheduledArrival: nextArrival,
-                targetStopKey: targetStopKey,
-                targetStopName: targetStopName
+                groupedETAs: groupedETAs,
+                targetStop: targetStop
             )
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         } catch {
             print("FAILED WIDGET FETCH: \(error)")
-            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, targetStopKey: targetStopKey, targetStopName: targetStopName)
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop)
             let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
             return Timeline(entries: [entry], policy: .after(retryDate))
         }
@@ -132,9 +133,8 @@ struct ShuttleWidgetEntryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .bottom) {
-                Text("target stop: \(entry.targetStopName)")
+                Text(entry.targetStop.id == ShuttleStop.allStops.id ? "all routes" : "target stop: \(entry.targetStop.displayString)")
                     .font(.system(size: 9, weight: .bold))
-                    .bold()
                     .lineLimit(1)
                 Spacer()
                 HStack(spacing: 4) {
@@ -145,8 +145,48 @@ struct ShuttleWidgetEntryView: View {
                 .foregroundStyle(.secondary)
             }
             Divider()
-            /* NOTE: the isAtStop, ETA, routeName, etc are not active endpoints so
-               some displayed data is wrong, but should work once the endpoints are restored */
+            if entry.targetStop.id == ShuttleStop.allStops.id {
+                allStopsView
+            } else {
+                singleStopView
+            }
+        }
+        .padding(6)
+        .containerBackground(Color(uiColor: .systemBackground), for: .widget)
+    }
+
+    private var allStopsView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if entry.groupedETAs.isEmpty {
+                Text("No active shuttles.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                ForEach(entry.groupedETAs) { section in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(section.id.capitalized + " Route")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(Color.forRoute(section.id))
+                        ForEach(section.etas) { eta in
+                            HStack {
+                                Text(eta.stopName)
+                                    .font(.system(size: 9, weight: .medium))
+                                    .lineLimit(1)
+                                Spacer()
+                                Text(eta.etaDate.formattedTime)
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            }
+                        }
+                    }
+                    Divider().opacity(0.5)
+                }
+            }
+        }
+    }
+
+    private var singleStopView: some View {
+        VStack(alignment: .leading, spacing: 4) {
             ForEach(entry.activeShuttles.prefix(6)) { vehicle in
                 HStack(spacing: 6) {
                     Capsule()
@@ -169,7 +209,7 @@ struct ShuttleWidgetEntryView: View {
                     .frame(width: 60, alignment: .leading)
                     Text(vehicle.formattedLocation).font(.system(size: 8))
                     Spacer(minLength: 0)
-                    if let etaStr = vehicle.stopEtaTimes[entry.targetStopKey] {
+                    if let etaStr = vehicle.soonestFutureEta(for: entry.targetStop.lookupKeys) {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("ETA")
                                 .font(.system(size: 8))
@@ -187,23 +227,20 @@ struct ShuttleWidgetEntryView: View {
                 Divider().opacity(0.5)
             }
             Spacer(minLength: 0)
-            HStack {
-                Text("Next Scheduled:")
-                    .font(.caption2)
-                Spacer()
-                if let next = entry.nextScheduledArrival {
-                    Text(next, style: .time)
-                        .font(.caption.bold())
-                } else {
-                    Text("None")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                HStack {
+                    Text("Next Scheduled:").font(.caption2)
+                    Spacer()
+                    if let next = entry.nextScheduledArrival {
+                        Text(next, style: .time)
+                            .font(.caption.bold())
+                    } else {
+                        Text("None")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            }
             .foregroundStyle(.secondary)
         }
-        .padding(6)
-        .containerBackground(Color(uiColor: .systemBackground), for: .widget)
     }
 }
 

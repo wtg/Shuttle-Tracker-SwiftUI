@@ -164,59 +164,9 @@ class ScheduleViewModel: ObservableObject {
         return stops
     }
 
-    private func getShortestETAs() -> [StopETA] {
-        // map to store the soonest ETA found so far for each unique stop key
-        var shortestEtas: [String: StopETA] = [:]
-        let now = Date()
-
-        // the API sometimes returns timestamps with fractional seconds and sometimes without, TODO: ask backend to standardize
-        let isoFormatterFractional = ISO8601DateFormatter()
-        isoFormatterFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let isoFormatterStandard = ISO8601DateFormatter()
-        isoFormatterStandard.formatOptions = [.withInternetDateTime]
-
-        for vehicle in vehicleService.vehicles {
-            for (stopKey, timeString) in vehicle.stopEtaTimes {
-                guard let etaDate = timeString.isoTimeToDate, etaDate > now else { continue }
-
-                // Resolve the human-readable stop name via the routedata stopDetails map
-                var currentStopName = stopKey // fallback to key if name lookup fails
-                if let route = routeService.getRoute(named: vehicle.routeName),
-                    let details = route.stopDetails[stopKey] {
-                    currentStopName = details.name
-                }
-
-                let newETA = StopETA(
-                        stopKey: stopKey,
-                        stopName: currentStopName,
-                        routeName: vehicle.routeName,
-                        etaDate: etaDate,
-                        vehicleName: vehicle.name
-                        )
-
-                let routeStopKey = stopKey + "_" + vehicle.routeName
-
-                if let existing = shortestEtas[routeStopKey] {
-                    if newETA.etaDate < existing.etaDate {
-                        shortestEtas[routeStopKey] = newETA
-                    }
-                } else {
-                    shortestEtas[routeStopKey] = newETA
-                }
-            }
-        }
-        return Array(shortestEtas.values).sorted { $0.etaDate < $1.etaDate }
-    }
-
+    /* get the shortest etas for each route using the shared processor */
     func getGroupedETAs() -> [EtasForRoute] {
-        let allEtas = getShortestETAs()
-        let grouped = Dictionary(grouping: allEtas) { $0.routeName }
-        let sections = grouped.map { (routeName, etas) -> EtasForRoute in
-            let sortedETAs = etas.sorted { $0.etaDate < $1.etaDate }
-            let routeColor = routeService.getRoute(named: routeName)?.color ?? "#000000"
-            return EtasForRoute(id: routeName, color: routeColor, etas: sortedETAs)
-        }
-        return sections.sorted { $0.id < $1.id }
+        return ETAProcessor.getGroupedETAs(vehicles: vehicleService.vehicles, routes: routeService.allRoutes)
     }
 }
 
@@ -234,21 +184,6 @@ struct TimeInfo: Hashable, Identifiable {
     let busName: String
     let date: Date
     let sortValue: Int
-}
-
-struct EtasForRoute: Identifiable {
-    let id: String
-    let color: String
-    let etas: [StopETA]
-}
-struct StopETA: Identifiable {
-    // stopName, routeName, etaDate, vehicleName
-    var id: String { stopKey + routeName }
-    let stopKey: String
-    let stopName: String
-    let routeName: String
-    let etaDate: Date
-    let vehicleName: String
 }
 
 enum DayOfWeek: String, CaseIterable, Identifiable {
