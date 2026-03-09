@@ -267,7 +267,7 @@ struct ShuttleWidget: Widget {
             ShuttleWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Shuttle Tracker")
-        .description("shuttle tracker widget")
+        .description("Shuttle Tracker Widget")
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }
