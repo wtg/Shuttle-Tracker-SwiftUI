@@ -10,13 +10,19 @@ import MapKit
 
 @main
 struct ShuttleTrackerApp: App {
+    // lasts as long as the app is running, and is injected into the different views
+    @StateObject private var container = DependencyContainer()
+    @Environment(\.scenePhase) var scenePhase
     var body: some Scene {
         WindowGroup {
-            MapView()
+            MapView(locationManager: container.locationManager)
+                .environmentObject(container)
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                // handles update on initial launch and returning from background
+                container.routeService.checkForRefresh()
+            }
         }
     }
-}
-
-#Preview {
-    MapView()
 }

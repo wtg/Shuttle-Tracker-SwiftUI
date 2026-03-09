@@ -6,8 +6,14 @@
 //
 import SwiftUI
 
-
 extension Color {
+    static func forRoute(_ routeName: String?) -> Color {
+        guard let name = routeName?.uppercased() else { return .gray }
+        if name.contains("NORTH") { return .red }
+        if name.contains("WEST") { return .blue }
+        return .gray
+    }
+
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -23,7 +29,6 @@ extension Color {
         default:
             (a, r, g, b) = (1, 1, 1, 0)
         }
-
         self.init(
             .sRGB,
             red: Double(r) / 255,
