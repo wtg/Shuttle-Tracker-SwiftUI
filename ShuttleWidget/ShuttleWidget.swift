@@ -141,7 +141,7 @@ struct ShuttleWidgetEntryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .bottom) {
-                Text(entry.targetStop.id == ShuttleStop.allStops.id ? "all routes" : "target stop: \(entry.targetStop.displayString)")
+                Text(entry.targetStop.id == ShuttleStop.allStops.id ? "All Routes" : "Target Stop: \(entry.targetStop.displayString)")
                     .font(.system(size: 9, weight: .bold))
                     .lineLimit(1)
                 Spacer()
