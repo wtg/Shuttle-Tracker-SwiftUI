@@ -4,9 +4,9 @@ import WidgetKit
 
 struct MapView: View {
     @EnvironmentObject var container: DependencyContainer
+    @EnvironmentObject var navigationState: NavigationState
     @StateObject private var viewModel: MapViewModel
 
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
     @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
 
     init(locationManager: LocationManager) {
@@ -19,7 +19,11 @@ struct MapView: View {
                 region: $viewModel.region,
                 routeService: container.routeService,
                 vehicleService: container.vehicleService,
-                showDeveloperPanel: $viewModel.showDeveloperPanel
+                showDeveloperPanel: $viewModel.showDeveloperPanel,
+                onVehicleTapped: { vehicle in
+                    navigationState.focusVehicleName = vehicle.name
+                    navigationState.selectedTab = 2
+                }
             )
 
             // UI overlay
@@ -57,22 +61,20 @@ struct MapView: View {
                     Spacer()
                 }
                 Spacer()
-                // bottom sheet
-                ScheduleAndEtaButtonView()
             }
         }
         .sheet(isPresented: $viewModel.showSettings) {
             SettingsView()
         }
-        .sheet(isPresented: $viewModel.showOnboarding) {
-            OnboardingView(
-                hasSeenOnboarding: $hasSeenOnboarding,
-                viewModel: viewModel
-            )
-        }
-        .onAppear {
-            if !hasSeenOnboarding {
-                viewModel.showOnboarding = true
+        .onChange(of: navigationState.focusCoordinate?.latitude) { _, _ in
+            if let coord = navigationState.focusCoordinate {
+                withAnimation {
+                    viewModel.region = MKCoordinateRegion(
+                        center: coord,
+                        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                    )
+                }
+                navigationState.focusCoordinate = nil
             }
         }
     }
@@ -84,22 +86,12 @@ struct MapDataLayer: View {
     @ObservedObject var routeService: RouteService
     @ObservedObject var vehicleService: VehicleService
     @Binding var showDeveloperPanel: Bool
+    var onVehicleTapped: ((VehicleLocationData) -> Void)?
     var body: some View {
         Map(position: .constant(.region(region))) {
-            // vehicle markers
-            ForEach(vehicleService.vehicles) { vehicle in
-                Marker(
-                    vehicle.name,
-                    systemImage: "bus.fill",
-                    coordinate: vehicle.coordinate
-                )
-                .tint(Color.forRoute(vehicle.routeName))
-            }
-
-            // route polylines
+            // route polylines (drawn first, below everything)
             ForEach(Array(routeService.activeRoutes), id: \.key) { routeName, routeData in
                 if routeData.color != "#00000000" {
-                    // draw Lines
                     ForEach(0..<routeData.routes.count, id: \.self) { index in
                         let coordinatePairs = routeData.routes[index]
                         let coordinates = convertCoordinates(coordinatePairs)
@@ -108,7 +100,7 @@ struct MapDataLayer: View {
                                 .stroke(Color(hex: routeData.color).opacity(0.6), lineWidth: 4)
                         }
                     }
-                    // draw Stops
+                    // stops (above polylines)
                     ForEach(routeData.stops, id: \.self) { stopKey in
                         if let stop = routeData.stopDetails[stopKey], stop.coordinates.count == 2 {
                             Annotation(
@@ -121,6 +113,22 @@ struct MapDataLayer: View {
                     }
                 }
             }
+
+            // vehicle markers (drawn last, always on top)
+            ForEach(vehicleService.vehicles) { vehicle in
+                Annotation(vehicle.name, coordinate: vehicle.coordinate) {
+                    VehicleMarkerView(
+                        color: Color.forRoute(vehicle.routeName),
+                        hasETAs: !vehicle.stopEtaTimes.isEmpty
+                    )
+                    .onTapGesture {
+                        if !vehicle.stopEtaTimes.isEmpty {
+                            onVehicleTapped?(vehicle)
+                        }
+                    }
+                }
+            }
+
             UserAnnotation()
         }
         .mapStyle(.standard(pointsOfInterest: .including([.school, .university])))
@@ -140,6 +148,22 @@ struct MapDataLayer: View {
 }
 
 // subviews
+struct VehicleMarkerView: View {
+    let color: Color
+    let hasETAs: Bool
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: 32, height: 32)
+                .shadow(radius: 3)
+            Image(systemName: "bus.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
 struct StopAnnotationView: View {
     let colorHex: String
     var body: some View {
@@ -154,45 +178,6 @@ struct StopAnnotationView: View {
                 .fill(Color(hex: colorHex))
                 .frame(width: 8, height: 8)
         }
-    }
-}
-
-struct OnboardingView: View {
-    @Binding var hasSeenOnboarding: Bool
-    @ObservedObject var viewModel: MapViewModel
-    @Environment(\.dismiss) var dismiss
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "location.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.tint)
-            Text("We use your location to show nearby shuttles")
-                .font(.title2).bold()
-                .multilineTextAlignment(.center)
-            Text("We ask for your location to center the map and calculate accurate ETAs.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Spacer()
-            Button(action: {
-                viewModel.requestLocation()
-                hasSeenOnboarding = true
-                dismiss()
-            }) {
-                Text("Continue")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            }
-            .buttonStyle(.borderedProminent)
-            .cornerRadius(16)
-            Button("Not Now") {
-                hasSeenOnboarding = true
-                dismiss()
-            }
-            .buttonStyle(.borderless)
-        }
-        .padding()
-        .presentationDetents([.medium, .large])
     }
 }
 

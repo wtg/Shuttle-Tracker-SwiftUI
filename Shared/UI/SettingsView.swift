@@ -3,10 +3,22 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var container: DependencyContainer
     @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = true
     @State private var showingCacheAlert = false
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    Picker("Appearance", selection: $appearanceMode) {
+                        Text("System").tag("system")
+                        Text("Light").tag("light")
+                        Text("Dark").tag("dark")
+                    }
+                } header: {
+                    Text("Appearance")
+                }
+
                 Section {
                     Toggle("Developer Mode", isOn: $isDeveloperMode)
                 } header: {
@@ -18,6 +30,13 @@ struct SettingsView: View {
                         clearCache()
                     } label: {
                         Text("Clear Data Cache")
+                    }
+                    if isDeveloperMode {
+                        Button(role: .destructive) {
+                            hasSeenOnboarding = false
+                        } label: {
+                            Text("Reset Onboarding")
+                        }
                     }
                 } header: {
                     Text("Troubleshooting")
