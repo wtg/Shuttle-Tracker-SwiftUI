@@ -15,6 +15,13 @@ struct ScheduleView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 16)
 
+            Text("Times are based off of Union departure.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
             dayPicker
             routePicker
             Divider()

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool
@@ -62,6 +63,17 @@ struct OnboardingView: View {
         }
     }
 
+    private var locationButtonLabel: String {
+        switch locationManager.authorizationStatus {
+        case .denied, .restricted:
+            return "Open Settings"
+        case .authorizedAlways, .authorizedWhenInUse:
+            return "Location Enabled"
+        default:
+            return "Enable Location"
+        }
+    }
+
     // MARK: - Pages
 
     private var welcomePage: some View {
@@ -100,7 +112,7 @@ struct OnboardingView: View {
             Button(action: {
                 locationManager.requestAuthorization()
             }) {
-                Label("Enable Location", systemImage: "location.fill")
+                Label(locationButtonLabel, systemImage: "location.fill")
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .padding(.horizontal, 20)

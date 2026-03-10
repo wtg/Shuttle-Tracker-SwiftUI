@@ -4,6 +4,7 @@ import WidgetKit
 
 struct MapView: View {
     @EnvironmentObject var container: DependencyContainer
+    @EnvironmentObject var navigationState: NavigationState
     @StateObject private var viewModel: MapViewModel
 
     @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
@@ -18,7 +19,11 @@ struct MapView: View {
                 region: $viewModel.region,
                 routeService: container.routeService,
                 vehicleService: container.vehicleService,
-                showDeveloperPanel: $viewModel.showDeveloperPanel
+                showDeveloperPanel: $viewModel.showDeveloperPanel,
+                onVehicleTapped: { vehicle in
+                    navigationState.focusVehicleName = vehicle.name
+                    navigationState.selectedTab = 2
+                }
             )
 
             // UI overlay
@@ -61,6 +66,17 @@ struct MapView: View {
         .sheet(isPresented: $viewModel.showSettings) {
             SettingsView()
         }
+        .onChange(of: navigationState.focusCoordinate?.latitude) { _, _ in
+            if let coord = navigationState.focusCoordinate {
+                withAnimation {
+                    viewModel.region = MKCoordinateRegion(
+                        center: coord,
+                        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                    )
+                }
+                navigationState.focusCoordinate = nil
+            }
+        }
     }
 }
 
@@ -70,22 +86,12 @@ struct MapDataLayer: View {
     @ObservedObject var routeService: RouteService
     @ObservedObject var vehicleService: VehicleService
     @Binding var showDeveloperPanel: Bool
+    var onVehicleTapped: ((VehicleLocationData) -> Void)?
     var body: some View {
         Map(position: .constant(.region(region))) {
-            // vehicle markers
-            ForEach(vehicleService.vehicles) { vehicle in
-                Marker(
-                    vehicle.name,
-                    systemImage: "bus.fill",
-                    coordinate: vehicle.coordinate
-                )
-                .tint(Color.forRoute(vehicle.routeName))
-            }
-
-            // route polylines
+            // route polylines (drawn first, below everything)
             ForEach(Array(routeService.activeRoutes), id: \.key) { routeName, routeData in
                 if routeData.color != "#00000000" {
-                    // draw Lines
                     ForEach(0..<routeData.routes.count, id: \.self) { index in
                         let coordinatePairs = routeData.routes[index]
                         let coordinates = convertCoordinates(coordinatePairs)
@@ -94,7 +100,7 @@ struct MapDataLayer: View {
                                 .stroke(Color(hex: routeData.color).opacity(0.6), lineWidth: 4)
                         }
                     }
-                    // draw Stops
+                    // stops (above polylines)
                     ForEach(routeData.stops, id: \.self) { stopKey in
                         if let stop = routeData.stopDetails[stopKey], stop.coordinates.count == 2 {
                             Annotation(
@@ -107,6 +113,22 @@ struct MapDataLayer: View {
                     }
                 }
             }
+
+            // vehicle markers (drawn last, always on top)
+            ForEach(vehicleService.vehicles) { vehicle in
+                Annotation(vehicle.name, coordinate: vehicle.coordinate) {
+                    VehicleMarkerView(
+                        color: Color.forRoute(vehicle.routeName),
+                        hasETAs: !vehicle.stopEtaTimes.isEmpty
+                    )
+                    .onTapGesture {
+                        if !vehicle.stopEtaTimes.isEmpty {
+                            onVehicleTapped?(vehicle)
+                        }
+                    }
+                }
+            }
+
             UserAnnotation()
         }
         .mapStyle(.standard(pointsOfInterest: .including([.school, .university])))
@@ -126,6 +148,22 @@ struct MapDataLayer: View {
 }
 
 // subviews
+struct VehicleMarkerView: View {
+    let color: Color
+    let hasETAs: Bool
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: 32, height: 32)
+                .shadow(radius: 3)
+            Image(systemName: "bus.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
 struct StopAnnotationView: View {
     let colorHex: String
     var body: some View {

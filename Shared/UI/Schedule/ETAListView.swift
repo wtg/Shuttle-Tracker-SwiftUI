@@ -1,7 +1,10 @@
 import SwiftUI
+import MapKit
 
 struct ETAListView: View {
     @ObservedObject var viewModel: ScheduleViewModel
+    @EnvironmentObject var container: DependencyContainer
+    @EnvironmentObject var navigationState: NavigationState
 
     init(viewModel: ScheduleViewModel) {
         _viewModel = ObservedObject(initialValue: viewModel)
@@ -9,17 +12,28 @@ struct ETAListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text("Live ETAs")
+            Text("ETAs")
                 .font(.system(size: 32, weight: .bold))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
                 .padding(.vertical, 16)
+
+            Text("ETAs are subject to change and not guaranteed. For detailed information, please check the map.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
 
             List {
                 ForEach(viewModel.getGroupedETAs()) { section in
                     Section {
                         ForEach(section.etas) { eta in
                             EtaRow(eta: eta)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    navigateToStop(eta: eta)
+                                }
                         }
                     } header: {
                         HStack {
@@ -50,6 +64,18 @@ struct ETAListView: View {
         }
         .onAppear {
             viewModel.loadData()
+        }
+    }
+
+    private func navigateToStop(eta: StopETA) {
+        if let route = container.routeService.getRoute(named: eta.routeName),
+           let stop = route.stopDetails[eta.stopKey],
+           stop.coordinates.count == 2 {
+            navigationState.focusCoordinate = CLLocationCoordinate2D(
+                latitude: stop.coordinates[0],
+                longitude: stop.coordinates[1]
+            )
+            navigationState.selectedTab = 0
         }
     }
 }
