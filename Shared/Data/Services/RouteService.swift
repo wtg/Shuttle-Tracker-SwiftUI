@@ -20,7 +20,7 @@ class RouteService: ObservableObject {
     @Published var isLoaded: Bool = false
 
     /// All routes downloaded from the server (even ones not running today).
-    private var allRoutes: ShuttleRouteData = [:]
+    var allRoutes: ShuttleRouteData = [:]
     private let client = APIClient.shared
     private let cache = CacheManager.shared
     private let lastFetchDateKey = "RouteService.lastFetchDate"

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 import MapKit
 
 @main
@@ -35,6 +36,7 @@ struct ShuttleTrackerApp: App {
             if newPhase == .active {
                 // handles update on initial launch and returning from background
                 container.routeService.checkForRefresh()
+                WidgetCenter.shared.reloadTimelines(ofKind: "ShuttleWidget")
             }
         }
     }

@@ -11,9 +11,11 @@ A SwiftUI application for tracking shuttle bus locations and schedules in real-t
 *   **Developer Mode:** For debugging and development purposes.
 
 <p align="center">
-  <img src="docs/map.png" width="30%" />
+  <img src="docs/map-view.png" width="30%" />
   <img src="docs/schedule.png" width="30%" /> 
   <img src="docs/live-etas.png" width="30%" />
+  <img src="docs/widget-all.png" width="30%" />
+  <img src="docs/widget-target.png" width="30%" />
 </p>
 
 ### Architecture

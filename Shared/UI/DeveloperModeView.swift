@@ -83,7 +83,7 @@ struct DeveloperModeView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
 
-                                Text("Timestamp: \(vehicle.timestamp)")
+                                Text("Timestamp: \(vehicle.timestamp.formattedTime)")
                                     .font(.caption2)
                                     .foregroundStyle(.tertiary)
                             }
