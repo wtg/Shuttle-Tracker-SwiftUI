@@ -6,7 +6,6 @@ struct MapView: View {
     @EnvironmentObject var container: DependencyContainer
     @StateObject private var viewModel: MapViewModel
 
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
     @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
 
     init(locationManager: LocationManager) {
@@ -57,23 +56,10 @@ struct MapView: View {
                     Spacer()
                 }
                 Spacer()
-                // bottom sheet
-                ScheduleAndEtaButtonView()
             }
         }
         .sheet(isPresented: $viewModel.showSettings) {
             SettingsView()
-        }
-        .sheet(isPresented: $viewModel.showOnboarding) {
-            OnboardingView(
-                hasSeenOnboarding: $hasSeenOnboarding,
-                viewModel: viewModel
-            )
-        }
-        .onAppear {
-            if !hasSeenOnboarding {
-                viewModel.showOnboarding = true
-            }
         }
     }
 }
@@ -154,45 +140,6 @@ struct StopAnnotationView: View {
                 .fill(Color(hex: colorHex))
                 .frame(width: 8, height: 8)
         }
-    }
-}
-
-struct OnboardingView: View {
-    @Binding var hasSeenOnboarding: Bool
-    @ObservedObject var viewModel: MapViewModel
-    @Environment(\.dismiss) var dismiss
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "location.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.tint)
-            Text("We use your location to show nearby shuttles")
-                .font(.title2).bold()
-                .multilineTextAlignment(.center)
-            Text("We ask for your location to center the map and calculate accurate ETAs.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Spacer()
-            Button(action: {
-                viewModel.requestLocation()
-                hasSeenOnboarding = true
-                dismiss()
-            }) {
-                Text("Continue")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            }
-            .buttonStyle(.borderedProminent)
-            .cornerRadius(16)
-            Button("Not Now") {
-                hasSeenOnboarding = true
-                dismiss()
-            }
-            .buttonStyle(.borderless)
-        }
-        .padding()
-        .presentationDetents([.medium, .large])
     }
 }
 

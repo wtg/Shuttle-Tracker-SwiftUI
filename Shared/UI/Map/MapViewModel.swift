@@ -5,7 +5,6 @@ import Combine
 @MainActor
 class MapViewModel: ObservableObject {
     @Published var region: MKCoordinateRegion
-    @Published var showOnboarding: Bool = false
     @Published var showSettings: Bool = false
     @Published var showDeveloperPanel: Bool = false
     @Published var selectedVehicle: VehicleLocationData? = nil

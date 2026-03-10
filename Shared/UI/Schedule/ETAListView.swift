@@ -3,8 +3,18 @@ import SwiftUI
 struct ETAListView: View {
     @ObservedObject var viewModel: ScheduleViewModel
 
+    init(viewModel: ScheduleViewModel) {
+        _viewModel = ObservedObject(initialValue: viewModel)
+    }
+
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            Text("Live ETAs")
+                .font(.system(size: 32, weight: .bold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.vertical, 16)
+
             List {
                 ForEach(viewModel.getGroupedETAs()) { section in
                     Section {
@@ -25,7 +35,6 @@ struct ETAListView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Live ETAs")
             .refreshable {
                 viewModel.loadData()
             }
@@ -38,6 +47,9 @@ struct ETAListView: View {
                     )
                 }
             }
+        }
+        .onAppear {
+            viewModel.loadData()
         }
     }
 }
