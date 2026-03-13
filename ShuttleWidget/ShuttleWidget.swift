@@ -15,6 +15,7 @@ struct ShuttleWidgetEntry: TimelineEntry {
     let nextScheduledArrival: Date? /* for single stop data */
     let groupedETAs: [EtasForRoute] /* for All Stops data   */
     let targetStop: ShuttleStop
+    let stopNames: [String: String]
 }
 
 struct ShuttleWidgetProvider: AppIntentTimelineProvider {
@@ -25,7 +26,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             activeShuttles: [],
             nextScheduledArrival: Date(),
             groupedETAs: [],
-            targetStop: ShuttleStop.defaultStop
+            targetStop: ShuttleStop.defaultStop,
+            stopNames: [:]
         )
     }
 
@@ -36,7 +38,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             activeShuttles: [],
             nextScheduledArrival: nil,
             groupedETAs: [],
-            targetStop: stop
+            targetStop: stop,
+            stopNames: [:]
         )
     }
 
@@ -54,12 +57,22 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
             let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
 
+            var validStopNames: [String: String] = [:]
+            if let routesData = routes {
+                for route in routesData.values {
+                    for (key, details) in route.stopDetails {
+                        validStopNames[key] = details.name
+                    }
+                }
+            }
+
             var relevantShuttles: [VehicleLocationData] = []
             var groupedETAs: [EtasForRoute] = []
             var nextArrival: Date? = nil
 
             if targetStop.id == ShuttleStop.allStops.id {
                 groupedETAs = ETAProcessor.getGroupedETAs(vehicles: vehicles, routes: routes ?? [:])
+                relevantShuttles = vehicles
             } else {
                 // relevantShuttles = vehicles /* when ETA endpoint isn't active */
                 /* either heading towards the selected stop, or is currently there */
@@ -81,13 +94,14 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 activeShuttles: relevantShuttles,
                 nextScheduledArrival: nextArrival,
                 groupedETAs: groupedETAs,
-                targetStop: targetStop
+                targetStop: targetStop,
+                stopNames: validStopNames
             )
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         } catch {
             print("FAILED WIDGET FETCH: \(error)")
-            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop)
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, stopNames: [:])
             let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
             return Timeline(entries: [entry], policy: .after(retryDate))
         }
@@ -165,8 +179,40 @@ struct ShuttleWidgetEntryView: View {
 
     private var allStopsView: some View {
         VStack(alignment: .leading, spacing: 6) {
+            /* including a list of stops that shuttles are at is particularly helpful
+                because the velocities api seems to be more reliable than the ETAs
+                api which often sends outdated ETA times. */
+            let stoppedVehicles = entry.activeShuttles.filter { vehicle in
+                guard vehicle.isAtStop, let currentStop = vehicle.currentStop else { return false }
+                return entry.stopNames.keys.contains(currentStop)
+            }
+            if !stoppedVehicles.isEmpty {
+                ForEach(stoppedVehicles) { vehicle in
+                    HStack {
+                        Text(vehicle.name)
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(Color.forRoute(vehicle.routeName))
+
+                        Text("at")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+
+                        Text(vehicle.currentStop?.capitalized ?? "Unknown")
+                        .font(.system(size: 9, weight: .medium))
+                        .lineLimit(1)
+
+                        Spacer()
+
+                        Text("Now")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.green)
+                    }
+                }
+                Divider().opacity(0.5)
+            }
+
             if entry.groupedETAs.isEmpty {
-                Text("No active shuttles.")
+                Text("No ETA predictions available.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
