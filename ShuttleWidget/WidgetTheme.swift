@@ -62,7 +62,7 @@ enum WidgetTheme: String, AppEnum {
         switch self {
         case .light: return .light
         case .dark, .red, .navy: return .dark
-        case .system: return nil
+        case .system: return .light
         }
     }
 }

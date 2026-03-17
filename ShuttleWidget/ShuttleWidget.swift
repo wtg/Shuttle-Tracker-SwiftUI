@@ -45,7 +45,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             groupedETAs: [],
             targetStop: stop,
             stopNames: [:],
-            theme: configuration.system
+            theme: .system
         )
     }
 
@@ -156,6 +156,17 @@ private func calculateNextScheduledArrival(for targetStopKey: String, schedule: 
     return nextDate
 }
 
+/* setup color theme/palette for environment injection to simplify constructors */
+private struct PaletteKey: EnvironmentKey {
+    static let defaultValue: ColorPalette = WidgetTheme.system.palette
+}
+extension EnvironmentValues {
+    var palette: ColorPalette {
+        get { self[PaletteKey.self] }
+        set { self[PaletteKey.self] = newValue }
+    }
+}
+
 struct ShuttleWidgetEntryView: View {
     var entry: ShuttleWidgetProvider.Entry
     @Environment(\.widgetFamily) var family
@@ -168,19 +179,24 @@ struct ShuttleWidgetEntryView: View {
                 MediumLargeShuttleWidgetView(entry: entry)
             }
         }
-        .containerBackground(Color(uiColor: .systemBackground), for: .widget)
+        .environment(\.palette, entry.theme.palette)
+        .foregroundStyle(entry.theme.palette.primaryText)
+        .containerBackground(entry.theme.palette.background, for: .widget)
+        .environment(\.colorScheme, entry.theme.colorScheme ?? .light)
     }
 }
 
 struct SmallShuttleWidgetView: View {
     var entry: ShuttleWidgetProvider.Entry
+    @Environment(\.palette) var palette
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(entry.targetStop.id == ShuttleStop.allStops.id ? "All Routes" : entry.targetStop.displayString)
                 .font(.system(size: 13, weight: .heavy))
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
-            Divider()
+            Rectangle().fill(palette.divider).frame(height: 1)
             if entry.targetStop.id == ShuttleStop.allStops.id {
                 smallAllStopsView
             } else {
@@ -206,7 +222,7 @@ struct SmallShuttleWidgetView: View {
                         .lineLimit(2)
                     Text("Now")
                         .font(.system(size: 12, weight: .heavy, design: .monospaced))
-                        .foregroundStyle(.green)
+                        .foregroundStyle(palette.highlight)
                 }
             } else if let firstGroup = entry.groupedETAs.first, let firstEta = firstGroup.etas.first {
                 VStack(alignment: .leading, spacing: 2) {
@@ -222,7 +238,7 @@ struct SmallShuttleWidgetView: View {
             } else {
                 Text("No ETA predictions available.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondaryText)
             }
             Spacer(minLength: 0)
         }
@@ -243,25 +259,26 @@ struct SmallShuttleWidgetView: View {
                     if nextVehicle.isAtStop && entry.targetStop.lookupKeys.contains(nextVehicle.currentStop ?? "") {
                         Text("Now")
                             .font(.system(size: 14, weight: .heavy, design: .monospaced))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(palette.highlight)
                     } else if let etaStr = nextVehicle.soonestFutureEta(for: entry.targetStop.lookupKeys) {
                         Text(etaStr.formattedTime)
                             .font(.system(size: 14, weight: .heavy, design: .monospaced))
                     } else {
                         Text("Moving")
                             .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(palette.highlight)
                     }
                 }
             } else {
                 Text("No ETA")
                     .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondaryText)
             }
             Spacer(minLength: 0)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Next Sched:")
                     .font(.system(size: 9))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondaryText)
                 if let next = entry.nextScheduledArrival {
                     Text(next, style: .time)
                         .font(.system(size: 11, weight: .bold))
@@ -276,6 +293,7 @@ struct SmallShuttleWidgetView: View {
 
 struct MediumLargeShuttleWidgetView: View {
     var entry: ShuttleWidgetProvider.Entry
+    @Environment(\.palette) var palette
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -289,9 +307,11 @@ struct MediumLargeShuttleWidgetView: View {
                     Text(entry.date, style: .time)
                 }
                 .font(.system(size:10, weight: .bold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(palette.secondaryText)
             }
-            Divider()
+
+            Rectangle().fill(palette.divider).frame(height: 1)
+
             if entry.targetStop.id == ShuttleStop.allStops.id {
                 allStopsView
             } else {
@@ -299,7 +319,6 @@ struct MediumLargeShuttleWidgetView: View {
             }
         }
         .padding(6)
-        .containerBackground(Color(uiColor: .systemBackground), for: .widget)
     }
 
     private var allStopsView: some View {
@@ -320,7 +339,7 @@ struct MediumLargeShuttleWidgetView: View {
 
                         Text("at")
                         .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(palette.secondaryText)
 
                         Text(vehicle.currentStop?.capitalized ?? "Unknown")
                         .font(.system(size: 9, weight: .medium))
@@ -330,16 +349,16 @@ struct MediumLargeShuttleWidgetView: View {
 
                         Text("Now")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
-                        .foregroundStyle(.green)
+                        .foregroundStyle(palette.highlight)
                     }
                 }
-                Divider().opacity(0.5)
+                Rectangle().fill(palette.divider).frame(height: 1)
             }
 
             if entry.groupedETAs.isEmpty {
                 Text("No ETA predictions available.")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(palette.secondaryText)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else {
                 ForEach(entry.groupedETAs) { section in
@@ -358,7 +377,7 @@ struct MediumLargeShuttleWidgetView: View {
                             }
                         }
                     }
-                    Divider().opacity(0.5)
+                    Rectangle().fill(palette.divider).frame(height: 1)
                 }
             }
         }
@@ -378,10 +397,10 @@ struct MediumLargeShuttleWidgetView: View {
                         Text("\(vehicle.speedMph, specifier: "%.1f") mph")
                         if vehicle.isAtStop {
                             Text("AT: \(vehicle.currentStop?.prefix(6) ?? "?")..")
-                                .foregroundStyle(.red)
+                                .foregroundStyle(palette.alert)
                         } else {
                             Text("MOVING")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(palette.highlight)
                         }
                     }
                     .font(.system(size: 9))
@@ -392,24 +411,24 @@ struct MediumLargeShuttleWidgetView: View {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("Now")
                                 .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                                .foregroundStyle(.green)
+                                .foregroundStyle(palette.highlight)
                         }
                     } else if let etaStr = vehicle.soonestFutureEta(for: entry.targetStop.lookupKeys) {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("ETA")
                                 .font(.system(size: 8))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(palette.secondaryText)
                             Text(etaStr.formattedTime)
                                 .font(.system(size: 11, weight: .bold, design: .monospaced))
                         }
                     } else {
                         Text("No ETA")
                             .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(palette.secondaryText)
                     }
                 }
                 .padding(.vertical, 2)
-                Divider().opacity(0.5)
+                Rectangle().fill(palette.divider).frame(height: 1)
             }
             Spacer(minLength: 0)
                 HStack {
@@ -421,10 +440,10 @@ struct MediumLargeShuttleWidgetView: View {
                     } else {
                         Text("None")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(palette.secondaryText)
                     }
                 }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(palette.secondaryText)
         }
     }
 }
