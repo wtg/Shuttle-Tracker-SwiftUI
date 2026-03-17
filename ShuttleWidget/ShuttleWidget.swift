@@ -3,10 +3,14 @@ import SwiftUI
 import AppIntents
 
 struct TargetStopIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource = "Target Stop"
-    static var description = IntentDescription("Select which stop to track.")
+    static var title: LocalizedStringResource = "Widget Settings"
+    static var description = IntentDescription("Select which stop to track and customize the theme.")
+
     @Parameter(title: "Stop", default: ShuttleStop.defaultStop)
     var stop: ShuttleStop?
+
+    @Parameter(title: "Theme", default: .system)
+    var theme: WidgetTheme
 }
 
 struct ShuttleWidgetEntry: TimelineEntry {
@@ -16,10 +20,10 @@ struct ShuttleWidgetEntry: TimelineEntry {
     let groupedETAs: [EtasForRoute] /* for All Stops data   */
     let targetStop: ShuttleStop
     let stopNames: [String: String]
+    let theme: WidgetTheme /* from app intents */
 }
 
 struct ShuttleWidgetProvider: AppIntentTimelineProvider {
-
     func placeholder(in context: Context) -> ShuttleWidgetEntry {
         ShuttleWidgetEntry(
             date: Date(),
@@ -27,7 +31,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             nextScheduledArrival: Date(),
             groupedETAs: [],
             targetStop: ShuttleStop.defaultStop,
-            stopNames: [:]
+            stopNames: [:],
+            theme: .system
         )
     }
 
@@ -39,7 +44,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             nextScheduledArrival: nil,
             groupedETAs: [],
             targetStop: stop,
-            stopNames: [:]
+            stopNames: [:],
+            theme: configuration.system
         )
     }
 
@@ -95,13 +101,14 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 nextScheduledArrival: nextArrival,
                 groupedETAs: groupedETAs,
                 targetStop: targetStop,
-                stopNames: validStopNames
+                stopNames: validStopNames,
+                theme: configuration.theme
             )
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         } catch {
             print("FAILED WIDGET FETCH: \(error)")
-            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, stopNames: [:])
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, stopNames: [:], theme: configuration.theme)
             let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
             return Timeline(entries: [entry], policy: .after(retryDate))
         }

@@ -6,6 +6,7 @@ struct ColorPalette {
     let primaryText: Color
     let secondaryText: Color
     let highlight: Color /* "Now"/"Moving" */
+    let alert: Color /* "at stop .." */
     let divider: Color
 }
 
@@ -33,6 +34,7 @@ enum WidgetTheme: String, AppEnum {
                 primaryText: .primary,
                 secondaryText: .secondary,
                 highlight: .green,
+                alert: .red,
                 divider: Color.primary.opacity(0.2)
             )
         case .red:
@@ -40,7 +42,8 @@ enum WidgetTheme: String, AppEnum {
                 background: Color(red: 0.75, green: 0.1, blue: 0.15),
                 primaryText: .white,
                 secondaryText: Color.white.opacity(0.8),
-                highlight: Color.yellow,
+                highlight: .yellow,
+                alert: .white,
                 divider: Color.white.opacity(0.3)
             )
         case .navy:
@@ -49,6 +52,7 @@ enum WidgetTheme: String, AppEnum {
                 primaryText: Color(white: 0.95),
                 secondaryText: Color(red: 0.6, green: 0.7, blue: 0.8),
                 highlight: .cyan,
+                alert: .orange,
                 divider: Color.white.opacity(0.15)
             )
         }
