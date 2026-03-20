@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import OSLog
+import WidgetKit
 
 private let logger = Logger(subsystem: "edu.rpi.shuttletracker", category: "VehicleService")
 
@@ -27,8 +28,11 @@ class VehicleService: ObservableObject {
         timer = nil
     }
 
-    // Fetches the locations, velocities, and ETAs in parallel then merges them
-    func refreshVehicles() async {
+    /* Fetches the locations, velocities, and ETAs in parallel then merges them.
+     * Manual refresh is available from the ETAListView, because that is where
+     *  up-to-date information is most important.
+     */
+    func refreshVehicles(isManualRefresh: Bool = false) async {
         do {
             async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
             async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
@@ -36,8 +40,33 @@ class VehicleService: ObservableObject {
 
             let (locations, velocities, etas) = try await (locationsMap, velocitiesMap, etasMap)
             self.vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+
+            if isManualRefresh {
+                printRawETAs(self.vehicles) /* for debugging purposes */
+                WidgetCenter.shared.reloadAllTimelines()
+            }
         } catch {
             logger.error("Failed to refresh vehicles: \(error.localizedDescription)")
         }
+    }
+    private func printRawETAs(_ vehicles: [VehicleLocationData]) {
+        print("\n=== Manual Refresh: Raw Vehicle ETAS ===")
+        print("Current time: \(Date().formattedTimeWithSeconds)")
+        for vehicle in vehicles {
+            print("Shuttle: \(vehicle.name) | Route: \(vehicle.routeName) | Updated: \(vehicle.timestamp.formattedTimeWithSeconds)")
+            if vehicle.stopEtaTimes.isEmpty {
+                print("   No ETAs available.")
+            } else {
+                let sortedEtas = vehicle.stopEtaTimes.sorted {
+                    let date1 = $0.value.isoTimeToDate ?? Date.distantFuture
+                    let date2 = $1.value.isoTimeToDate ?? Date.distantFuture
+                    return date1 < date2
+                }
+                for (stop, time) in sortedEtas {
+                    print("   - \(stop): \(time.formattedTimeWithSeconds)")
+                }
+            }
+        }
+        print("========================================\n")
     }
 }

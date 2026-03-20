@@ -7,6 +7,13 @@ private let scheduleTimeFormatter: DateFormatter = {
     return formatter
 }()
 
+private let scheduleTimeWithSecondsFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "h:mm:ss a"
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    return formatter
+}()
+
 extension String {
     private static let isoFractionalFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
@@ -34,11 +41,20 @@ extension String {
         guard let date = self.isoTimeToDate else { return "—" }
         return date.formattedTime
     }
+
+    var formattedTimeWithSeconds: String {
+        guard let date = self.isoTimeToDate else { return "—" }
+        return date.formattedTimeWithSeconds
+    }
 }
 
 extension Date {
     // formatting into a time string
     var formattedTime: String {
         return scheduleTimeFormatter.string(from: self)
+    }
+
+    var formattedTimeWithSeconds: String {
+        return scheduleTimeWithSecondsFormatter.string(from: self)
     }
 }
