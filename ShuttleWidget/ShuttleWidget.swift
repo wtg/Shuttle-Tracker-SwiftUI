@@ -184,6 +184,8 @@ struct ShuttleWidgetEntryView: View {
             switch family {
             case .systemSmall:
                 SmallShuttleWidgetView(entry: entry)
+            case .accessoryRectangular:
+                RectangularShuttleWidgetView(entry: entry)
             default:
                 MediumLargeShuttleWidgetView(entry: entry)
             }
@@ -192,6 +194,42 @@ struct ShuttleWidgetEntryView: View {
         .foregroundStyle(entry.theme.palette.primaryText)
         .containerBackground(entry.theme.palette.background, for: .widget)
         .environment(\.colorScheme, entry.theme.colorScheme ?? .light)
+    }
+}
+
+struct RectangularShuttleWidgetView: View {
+    var entry: ShuttleWidgetProvider.Entry
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(entry.targetStop.displayString) /* line 1: stop */
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+
+            if entry.targetStop.id == ShuttleStop.allStops.id {
+                Text("Select a specific stop").font(.system(size: 10, weight: .heavy))
+            } else {
+                /* line 2: eta, now, or blank */
+                if let firstVehicle = entry.activeShuttles.first {
+                    if firstVehicle.isAtStop && entry.targetStop.lookupKeys.contains(firstVehicle.currentStop ?? "") {
+                        Text("Now").font(.subheadline)
+                    } else if let etaStr = firstVehicle.soonestFutureEta(for: entry.targetStop.lookupKeys), let etaDate = etaStr.isoTimeToDate {
+                        Text(etaDate.formattedTimeWithSeconds).font(.system(size: 10, weight: .heavy))
+                    } else {
+                        Text(" ").font(.system(size: 10, weight: .heavy))
+                    }
+                } else {
+                    Text(" ").font(.system(size: 10, weight: .heavy))
+                }
+
+                /* line 3: schedule */
+                if let next = entry.nextScheduledArrival {
+                    Text("Next Sched: \(next, style: .time)").font(.caption)
+                } else {
+                    Text("Next Sched: None").font(.caption)
+                }
+            }
+        }
     }
 }
 
@@ -467,6 +505,6 @@ struct ShuttleWidget: Widget {
         }
         .configurationDisplayName("Shuttle Tracker")
         .description("Shuttle Tracker Widget")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular])
     }
 }
