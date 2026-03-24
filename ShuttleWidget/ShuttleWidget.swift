@@ -81,8 +81,13 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 relevantShuttles = vehicles
             } else {
                 // relevantShuttles = vehicles /* when ETA endpoint isn't active */
+
                 /* either heading towards the selected stop, or is currently there */
                 relevantShuttles = vehicles.filter { vehicle in
+                    /* filter to only the specific route if this stop is non-disjoint between routes (student union) */
+                    if let requiredRoute = targetStop.routeKey, vehicle.routeName != requiredRoute {
+                        return false
+                    }
                     let hasFutureEta = vehicle.soonestFutureEta(for: targetStop.lookupKeys) != nil
                     var isCurrentlyHere = false
                     if vehicle.isAtStop, let current = vehicle.currentStop {
@@ -91,7 +96,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                     return hasFutureEta || isCurrentlyHere
                 }
                 if let schedule = schedule, let routes = routes {
-                    nextArrival = calculateNextScheduledArrival(for: targetStop.id, schedule: schedule, routes: routes)
+                    nextArrival = calculateNextScheduledArrival(for: targetStop.stopKey, routeKey: targetStop.routeKey, schedule: schedule, routes: routes)
                 }
             }
 
@@ -115,10 +120,12 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
     }
 }
 
-private func calculateNextScheduledArrival(for targetStopKey: String, schedule: ScheduleData, routes: ShuttleRouteData) -> Date? {
+private func calculateNextScheduledArrival(for targetStopKey: String, routeKey: String?, schedule: ScheduleData, routes: ShuttleRouteData) -> Date? {
     let calendar = Calendar.current
     let now = Date()
     let weekday = calendar.component(.weekday, from: now)
+
+    print("Finding next scheduled for \(targetStopKey) (route=\(routeKey ?? "X")))");
 
     let scheduleMap: [String: [[String]]]
     if weekday == 1 { scheduleMap = schedule.sundaySchedule }
@@ -131,6 +138,8 @@ private func calculateNextScheduledArrival(for targetStopKey: String, schedule: 
             guard timePair.count >= 2 else { continue }
             let timeStr = timePair[0]
             let routeName = timePair[1]
+
+            if routeKey != nil && routeName != routeKey { continue; }
 
             guard let baseDate = timeStr.simpleTimeToDate else { continue }
             let baseComponents = calendar.dateComponents([.hour, .minute], from: baseDate)
@@ -334,7 +343,7 @@ struct MediumLargeShuttleWidgetView: View {
                 ForEach(stoppedVehicles) { vehicle in
                     HStack {
                         Text(vehicle.name)
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(Color.forRoute(vehicle.routeName))
 
                         Text("at")
@@ -342,13 +351,13 @@ struct MediumLargeShuttleWidgetView: View {
                         .foregroundStyle(palette.secondaryText)
 
                         Text(vehicle.currentStop?.capitalized ?? "Unknown")
-                        .font(.system(size: 9, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .lineLimit(1)
 
                         Spacer()
 
                         Text("Now")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundStyle(palette.highlight)
                     }
                 }
