@@ -56,16 +56,25 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
         )
     }
 
+    // we can use the mock generator to show sample data
     func snapshot(for configuration: TargetStopIntent, in context: Context) async -> ShuttleWidgetEntry {
         let stop = configuration.stop ?? ShuttleStop.defaultStop
+        let mockVehicles = MockEndpointDataGenerator.generateMergedSimulation(count: 3)
+        let mockNextArrival = Calendar.current.date(byAdding: .minute, value: 15, to: Date())
         return ShuttleWidgetEntry(
             date: Date(),
-            activeShuttles: [],
-            nextScheduledArrival: nil,
+            activeShuttles: mockVehicles,
+            nextScheduledArrival: mockNextArrival,
             groupedETAs: [],
             targetStop: stop,
-            stopNames: [:],
-            theme: .system
+            stopNames: [
+                "STUDENT_UNION": "Student Union",
+                "ECAV": "ECAV",
+                "CITY_STATION": "City Station",
+                "BLITMAN": "Blitman",
+                "BARH": "BARH"
+            ],
+            theme: configuration.theme
         )
     }
 
@@ -79,14 +88,29 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
         do {
             let client = APIClient.shared
 
-            async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
-            async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
-            async let etasMap = try? client.fetch([String: VehicleETADTO].self, endpoint: .vehicleEtas)
+            // load the static endpoints
             async let routesData = try? client.fetch(ShuttleRouteData.self, endpoint: .routes)
             async let scheduleData = try? client.fetch(ScheduleData.self, endpoint: .schedule)
+            let (routes, schedule) = await (routesData, scheduleData)
 
-            let (locations, velocities, etas, routes, schedule) = try await (locationsMap, velocitiesMap, etasMap, routesData, scheduleData)
-            let vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+            #if DEBUG
+            let useMockData = true
+            #else
+            let useMockData = false
+            #endif
+
+            let vehicles: [VehicleLocationData]
+
+            if useMockData {
+                vehicles = MockEndpointDataGenerator.generateMergedSimulation(count: 4)
+            } else {
+                async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
+                async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
+                async let etasMap = try? client.fetch([String: VehicleETADTO].self, endpoint: .vehicleEtas)
+
+                let (locations, velocities, etas) = try await (locationsMap, velocitiesMap, etasMap)
+                vehicles = VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+            }
 
             var validStopNames: [String: String] = [:]
             if let routesData = routes {
@@ -306,7 +330,7 @@ struct SmallShuttleWidgetView: View {
                 return entry.stopNames.keys.contains(currentStop)
             }
             if !stoppedVehicles.isEmpty {
-                ForEach(stoppedVehicles.prefix(3)) { vehicle in
+                ForEach(stoppedVehicles.prefix(2)) { vehicle in
                     HStack {
                         Text("\(entry.stopNames[vehicle.currentStop ?? ""] ?? "Stop")")
                             .font(.system(size: 10, weight: .bold))
@@ -319,26 +343,25 @@ struct SmallShuttleWidgetView: View {
                     }
                 }
             }
-            if let firstGroup = entry.groupedETAs.first, !firstGroup.etas.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(firstGroup.id.capitalized)
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(Color.forRoute(firstGroup.id))
-                    ForEach(firstGroup.etas.prefix(3)) { eta in
-                        HStack {
-                            Text(eta.stopName)
-                                .font(.system(size: 10))
-                                .lineLimit(1)
-                            Spacer(minLength: 2)
-                            Text(eta.etaDate.formattedTime)
-                                .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                        }
-                    }
-                }
-            } else {
+            if entry.groupedETAs.isEmpty {
                 Text("No ETA predictions available.")
                     .font(.system(size: 8))
                     .foregroundStyle(palette.secondaryText)
+            } else {
+                ForEach(entry.groupedETAs) { section in
+                    VStack(alignment: .leading, spacing: 2) {
+                        ForEach(section.etas.prefix(2)) { eta in
+                            HStack {
+                                Text(eta.stopName)
+                                    .font(.system(size: 9, weight: .medium))
+                                    .lineLimit(1)
+                                Spacer()
+                                Text(eta.etaDate.formattedTime)
+                                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                            }
+                        }
+                    }
+                }
             }
             Spacer(minLength: 0)
         }
@@ -348,7 +371,7 @@ struct SmallShuttleWidgetView: View {
     private var smallSingleStopView: some View {
         VStack(alignment: .leading, spacing: 4) {
             if !entry.activeShuttles.isEmpty {
-                ForEach(entry.activeShuttles.prefix(3)) { vehicle in
+                ForEach(entry.activeShuttles.prefix(4)) { vehicle in
                     HStack(spacing: 4) {
                         Capsule()
                             .fill(Color.forRoute(vehicle.routeName))
@@ -393,6 +416,11 @@ struct SmallShuttleWidgetView: View {
 struct MediumLargeShuttleWidgetView: View {
     var entry: ShuttleWidgetProvider.Entry
     @Environment(\.palette) var palette
+    @Environment(\.widgetFamily) var family
+
+    private var maxStoppedVehicles: Int { family == .systemLarge ? 4 : 2 }
+    private var maxETAsPerRoute: Int { family == .systemLarge ? 5 : 2 }
+    private var maxSingleStopVehicles: Int { family == .systemLarge ? 6 : 2 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -439,7 +467,7 @@ struct MediumLargeShuttleWidgetView: View {
                 return entry.stopNames.keys.contains(currentStop)
             }
             if !stoppedVehicles.isEmpty {
-                ForEach(stoppedVehicles) { vehicle in
+                ForEach(stoppedVehicles.prefix(maxStoppedVehicles)) { vehicle in
                     HStack {
                         Text(vehicle.name)
                             .font(.system(size: 11, weight: .bold))
@@ -449,7 +477,9 @@ struct MediumLargeShuttleWidgetView: View {
                         .font(.system(size: 9))
                         .foregroundStyle(palette.secondaryText)
 
-                        Text(vehicle.currentStop?.capitalized ?? "Unknown")
+                        Text((vehicle.currentStop == "STUDENT_UNION_RETURN" ? "STUDENT_UNION" : (vehicle.currentStop ?? "Unknown"))
+                                .replacingOccurrences(of: "_", with: " ")
+                                .capitalized)
                         .font(.system(size: 11, weight: .medium))
                         .lineLimit(1)
 
@@ -460,7 +490,6 @@ struct MediumLargeShuttleWidgetView: View {
                         .foregroundStyle(palette.highlight)
                     }
                 }
-                Rectangle().fill(palette.divider).frame(height: 1)
             }
 
             if entry.groupedETAs.isEmpty {
@@ -473,7 +502,8 @@ struct MediumLargeShuttleWidgetView: View {
                         Text(section.id.capitalized + " Route")
                             .font(.system(size: 10, weight: .heavy))
                             .foregroundStyle(Color.forRoute(section.id))
-                        ForEach(section.etas) { eta in
+                        // only show first 2 next etas, for each route
+                        ForEach(section.etas.prefix(maxETAsPerRoute)) { eta in
                             HStack {
                                 Text(eta.stopName)
                                     .font(.system(size: 9, weight: .medium))
@@ -484,7 +514,6 @@ struct MediumLargeShuttleWidgetView: View {
                             }
                         }
                     }
-                    Rectangle().fill(palette.divider).frame(height: 1)
                 }
             }
         }
@@ -492,28 +521,39 @@ struct MediumLargeShuttleWidgetView: View {
 
     private var singleStopView: some View {
         VStack(alignment: .leading, spacing: 4) {
-            ForEach(entry.activeShuttles.prefix(6)) { vehicle in
+            ForEach(entry.activeShuttles.prefix(maxSingleStopVehicles)) { vehicle in
+                let rawStop = vehicle.currentStop ?? "Unknown"
+                let curStop = rawStop == "STUDENT_UNION_RETURN" ? "STUDENT_UNION" : rawStop
+                let displayName = curStop.replacingOccurrences(of: "_", with: " ").capitalized
                 HStack(spacing: 6) {
                     Capsule()
                         .fill(Color.forRoute(vehicle.routeName))
                         .frame(width: 4, height: 16)
+
                     Text(vehicle.name)
                         .font(.system(size: 11, weight: .bold))
                         .frame(width: 30, alignment: .leading)
+
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(vehicle.speedMph, specifier: "%.1f") mph")
                         if vehicle.isAtStop {
-                            Text("AT: \(vehicle.currentStop?.prefix(6) ?? "?")..")
+                            Text("AT: \(displayName)")
                                 .foregroundStyle(palette.alert)
+                                .lineLimit(1)
                         } else {
                             Text("MOVING")
                                 .foregroundStyle(palette.highlight)
                         }
                     }
                     .font(.system(size: 9))
-                    .frame(width: 60, alignment: .leading)
-                    Text(vehicle.formattedLocation).font(.system(size: 8))
+                    .frame(width: 80, alignment: .leading)
+
+                    Text(vehicle.formattedLocation)
+                        .font(.system(size: 8))
+                        .lineLimit(2)
+
                     Spacer(minLength: 0)
+
                     if vehicle.isAtStop && entry.targetStop.lookupKeys.contains(vehicle.currentStop ?? "") {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("Now")
@@ -535,6 +575,7 @@ struct MediumLargeShuttleWidgetView: View {
                     }
                 }
                 .padding(.vertical, 2)
+
                 Rectangle().fill(palette.divider).frame(height: 1)
             }
             Spacer(minLength: 0)

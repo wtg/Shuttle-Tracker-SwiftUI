@@ -56,6 +56,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Models/ETAProcessor.swift,
+				Data/Models/MockEndpointDataGenerator.swift,
 				Data/Models/RouteData.swift,
 				Data/Models/ScheduleData.swift,
 				Data/Models/VehicleLocationData.swift,
