@@ -379,12 +379,11 @@ struct SmallShuttleWidgetView: View {
             Spacer(minLength: 0)
             HStack {
                 Text("Schedule:")
-                    .font(.system(size: 11))
-                    .foregroundStyle(palette.secondaryText)
+                    .font(.system(size: 13))
                 if let next = entry.nextScheduledArrival {
-                    Text(next, style: .time).font(.system(size: 11, weight: .bold))
+                    Text(next, style: .time).font(.system(size: 12, weight: .bold))
                 } else {
-                    Text("None").font(.system(size: 11, weight: .bold))
+                    Text("None").font(.system(size: 12, weight: .bold))
                 }
             }
         }
@@ -399,11 +398,10 @@ struct MediumLargeShuttleWidgetView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .bottom) {
                 Text(entry.targetStop.displayString)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 13, weight: .bold))
                     .lineLimit(1)
                 Spacer()
                 HStack(spacing: 7) {
-                    Text("Updated:")
                     Text(entry.date, style: .time)
 
                     /* buttons */
@@ -416,7 +414,7 @@ struct MediumLargeShuttleWidgetView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(palette.secondaryText)
             }
 
@@ -540,19 +538,15 @@ struct MediumLargeShuttleWidgetView: View {
                 Rectangle().fill(palette.divider).frame(height: 1)
             }
             Spacer(minLength: 0)
-                HStack {
-                    Text("Schedule:").font(.caption2)
-                    Spacer()
-                    if let next = entry.nextScheduledArrival {
-                        Text(next, style: .time)
-                            .font(.caption.bold())
-                    } else {
-                        Text("None")
-                            .font(.caption)
-                            .foregroundStyle(palette.secondaryText)
-                    }
+            HStack {
+                Text("Schedule:")
+                    .font(.system(size: 13))
+                if let next = entry.nextScheduledArrival {
+                    Text(next, style: .time).font(.system(size: 12, weight: .bold))
+                } else {
+                    Text("None").font(.system(size: 12, weight: .bold))
                 }
-            .foregroundStyle(palette.secondaryText)
+            }
         }
     }
 }

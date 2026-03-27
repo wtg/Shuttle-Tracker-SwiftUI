@@ -13,7 +13,6 @@ struct ColorPalette {
 enum WidgetTheme: String, AppEnum {
     case system
     case light
-    case dark
     case red
     case navy
 
@@ -21,14 +20,13 @@ enum WidgetTheme: String, AppEnum {
     static var caseDisplayRepresentations: [WidgetTheme: DisplayRepresentation] = [
         .system: "System Default",
         .light: "Light",
-        .dark: "Dark",
         .red: "Red",
         .navy: "Navy"
     ]
 
     var palette: ColorPalette {
         switch self {
-        case .system, .light, .dark:
+        case .system, .light:
             return ColorPalette(
                 background: Color(uiColor: .systemBackground),
                 primaryText: .primary,
@@ -39,12 +37,12 @@ enum WidgetTheme: String, AppEnum {
             )
         case .red:
             return ColorPalette(
-                background: Color(red: 0.75, green: 0.1, blue: 0.15),
+                background: Color(red: 0.38, green: 0.08, blue: 0.25),
                 primaryText: .white,
-                secondaryText: Color.white.opacity(0.8),
-                highlight: .yellow,
-                alert: .white,
-                divider: Color.white.opacity(0.3)
+                secondaryText: Color.white.opacity(0.78),
+                highlight: Color(red: 1.0, green: 0.75, blue: 0.9),
+                alert: Color(red: 1.0, green: 0.85, blue: 0.9),
+                divider: Color.white.opacity(0.22)
             )
         case .navy:
             return ColorPalette(
@@ -61,7 +59,7 @@ enum WidgetTheme: String, AppEnum {
     var colorScheme: ColorScheme? {
         switch self {
         case .light: return .light
-        case .dark, .red, .navy: return .dark
+        case .red, .navy: return .dark
         case .system: return .light
         }
     }
