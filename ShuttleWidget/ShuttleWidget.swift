@@ -5,11 +5,17 @@ import AppIntents
 struct ToggleStopModeIntent: AppIntent {
     static var title: LocalizedStringResource = "Toggle Stop Mode"
     static var description = IntentDescription("Switches the widget between All Stops and your favorite stop.")
-    init() {}
+
+    @Parameter(title: "Configured Stop ID")
+    var stopId: String
+    init() { self.stopId = "" }
+    init(stopId: String) { self.stopId = stopId }
+
     func perform() async throws -> some IntentResult {
         let defaults = UserDefaults.standard
-        let isShowingAllStops = defaults.bool(forKey: "isShowingAllStops")
-        defaults.set(!isShowingAllStops, forKey: "isShowingAllStops")
+        let key = "isShowingAllStops_\(stopId)"
+        let isShowingAllStops = defaults.bool(forKey: key)
+        defaults.set(!isShowingAllStops, forKey: key)
         return .result() /* this triggers a widget timeline reload */
     }
 }
@@ -39,6 +45,7 @@ struct ShuttleWidgetEntry: TimelineEntry {
     let nextScheduledArrival: Date? /* for single stop data */
     let groupedETAs: [EtasForRoute] /* for All Stops data   */
     let targetStop: ShuttleStop
+    let configuredStop: ShuttleStop
     let stopNames: [String: String]
     let theme: WidgetTheme /* from app intents */
 }
@@ -51,6 +58,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             nextScheduledArrival: Date(),
             groupedETAs: [],
             targetStop: ShuttleStop.defaultStop,
+            configuredStop: ShuttleStop.defaultStop,
             stopNames: [:],
             theme: .system
         )
@@ -67,6 +75,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             nextScheduledArrival: mockNextArrival,
             groupedETAs: [],
             targetStop: stop,
+            configuredStop: stop,
             stopNames: [
                 "STUDENT_UNION": "Student Union",
                 "ECAV": "ECAV",
@@ -79,8 +88,11 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: TargetStopIntent, in context: Context) async -> Timeline<ShuttleWidgetEntry> {
-        let isShowingAllStops = UserDefaults.standard.bool(forKey: "isShowingAllStops")
-        var targetStop = configuration.stop ?? ShuttleStop.defaultStop
+        let configuredStop = configuration.stop ?? ShuttleStop.defaultStop
+        let defKey = "isShowingAllStops_\(configuredStop.id)"
+        let isShowingAllStops = UserDefaults.standard.bool(forKey: defKey)
+
+        var targetStop = configuredStop
         if isShowingAllStops {
             targetStop = ShuttleStop.allStops
         }
@@ -155,6 +167,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 nextScheduledArrival: nextArrival,
                 groupedETAs: groupedETAs,
                 targetStop: targetStop,
+                configuredStop: configuredStop,
                 stopNames: validStopNames,
                 theme: configuration.theme
             )
@@ -162,7 +175,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         } catch {
             print("FAILED WIDGET FETCH: \(error)")
-            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, stopNames: [:], theme: configuration.theme)
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, configuredStop: configuredStop, stopNames: [:], theme: configuration.theme)
             let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
             return Timeline(entries: [entry], policy: .after(retryDate))
         }
@@ -302,7 +315,7 @@ struct SmallShuttleWidgetView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     .buttonStyle(.plain)
-                    Button(intent: ToggleStopModeIntent()) {
+                    Button(intent: ToggleStopModeIntent(stopId: entry.configuredStop.id)) {
                         Image(systemName: entry.targetStop.id == ShuttleStop.allStops.id ? "star.fill" : "list.bullet")
                     }
                     .buttonStyle(.plain)
@@ -437,7 +450,7 @@ struct MediumLargeShuttleWidgetView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     .buttonStyle(.plain)
-                    Button(intent: ToggleStopModeIntent()) {
+                    Button(intent: ToggleStopModeIntent(stopId: entry.configuredStop.id)) {
                         Image(systemName: entry.targetStop.id == ShuttleStop.allStops.id ? "star.fill" : "list.bullet")
                     }
                     .buttonStyle(.plain)
