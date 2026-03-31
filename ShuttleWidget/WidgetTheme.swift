@@ -15,13 +15,15 @@ enum WidgetTheme: String, AppEnum {
     case light
     case red
     case navy
+    case teal
 
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Widget Theme"
     static var caseDisplayRepresentations: [WidgetTheme: DisplayRepresentation] = [
         .system: "System Default",
         .light: "Light",
         .red: "Red",
-        .navy: "Navy"
+        .navy: "Navy",
+        .teal: "Teal"
     ]
 
     var palette: ColorPalette {
@@ -53,13 +55,22 @@ enum WidgetTheme: String, AppEnum {
                 alert: .orange,
                 divider: Color.white.opacity(0.15)
             )
+        case .teal:
+            return ColorPalette(
+                background: Color(red: 0.06, green: 0.22, blue: 0.24),
+                primaryText: Color(white: 0.95),
+                secondaryText: Color(red: 0.65, green: 0.82, blue: 0.8),
+                highlight: Color(red: 0.4, green: 0.9, blue: 0.75),
+                alert: Color(red: 1.0, green: 0.6, blue: 0.5),
+                divider: Color.white.opacity(0.18)
+            )
         }
     }
     /* for shadows/default icons, other fixed UI elements */
     var colorScheme: ColorScheme? {
         switch self {
         case .light: return .light
-        case .red, .navy: return .dark
+        case .red, .navy, .teal: return .dark
         case .system: return .light
         }
     }
