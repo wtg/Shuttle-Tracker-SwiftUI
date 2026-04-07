@@ -24,8 +24,13 @@ struct MockEndpointDataGenerator {
 
     // assign route based on vehicle id
     private static func route(for id: String) -> String {
-        return (id.hashValue % 2 == 0) ? "WEST" : "NORTH"
+        if let index = sampleVehicleIDs.firstIndex(of: id) {
+            return (index % 2 == 0) ? "WEST" : "NORTH"
+        }
+        return "WEST" // fallback
     }
+
+
     private static func validStops(for route: String) -> [String] {
         return route == "WEST" ? westStops : northStops
     }
@@ -93,6 +98,47 @@ struct MockEndpointDataGenerator {
         let velocities = generateVelocities(for: ids)
         let etas = generateETAs(for: ids)
         return VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+    }
+
+    static func generateMergedSimulation(scenario: String = "standard") -> [VehicleLocationData] {
+        switch scenario {
+        case "empty": return []
+        case "clustered":
+            // multiple shuttles stacked at the Student Union
+            let locations = generateClusteredLocations()
+            let ids = Array(locations.keys)
+            let velocities = generateVelocities(for: ids)
+            let etas = generateETAs(for: ids)
+            return VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+        case "standard":
+            fallthrough
+        default:
+            let locations = generateLocations(count: 4)
+            let ids = Array(locations.keys)
+            let velocities = generateVelocities(for: ids)
+            let etas = generateETAs(for: ids)
+            return VehicleDTOMerger.merge(locations: locations, velocities: velocities, etas: etas)
+        }
+    }
+
+    private static func generateClusteredLocations() -> [String: VehicleLocationDTO] {
+        var mockLocations: [String: VehicleLocationDTO] = [:]
+        let unionLat = 42.7302
+        let unionLon = -73.6766
+        for i in 0..<3 {
+            let id = sampleVehicleIDs[i]
+            mockLocations[id] = VehicleLocationDTO(
+                name: sampleNames[i],
+                /* small amount of variance */
+                latitude: unionLat + Double.random(in: -0.0001...0.0001),
+                longitude: unionLon + Double.random(in: -0.0001...0.0001),
+                headingDegrees: Double.random(in: 0...360),
+                speedMph: 0.0,
+                formattedLocation: "Student Union",
+                timestamp: generateISOString(offsetMinutes: 0)
+            )
+        }
+        return mockLocations
     }
 
     private static func generateISOString(offsetMinutes: Int) -> String {

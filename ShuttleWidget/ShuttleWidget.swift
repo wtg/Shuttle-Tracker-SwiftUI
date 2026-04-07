@@ -48,6 +48,22 @@ struct ShuttleWidgetEntry: TimelineEntry {
     let configuredStop: ShuttleStop
     let stopNames: [String: String]
     let theme: WidgetTheme /* from app intents */
+    let isMockDataEnabled: Bool
+}
+
+struct ToggleWidgetMockDataIntent: AppIntent {
+    static var title: LocalizedStringResource = "Toggle Widget Mock Data"
+
+    @Parameter(title: "Enable Mock Data")
+    var enable: Bool
+    init() { self.enable = false }
+    init(enable: Bool) { self.enable = enable }
+
+    func perform() async throws -> some IntentResult {
+        // Explicitly set the value rather than reading and toggling
+        UserDefaults.standard.set(enable, forKey: "widget_useMockData")
+        return .result() /* triggers widget reload */
+    }
 }
 
 struct ShuttleWidgetProvider: AppIntentTimelineProvider {
@@ -60,7 +76,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             targetStop: ShuttleStop.defaultStop,
             configuredStop: ShuttleStop.defaultStop,
             stopNames: [:],
-            theme: .system
+            theme: .system,
+            isMockDataEnabled: true
         )
     }
 
@@ -83,7 +100,8 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 "BLITMAN": "Blitman",
                 "BARH": "BARH"
             ],
-            theme: configuration.theme
+            theme: configuration.theme,
+            isMockDataEnabled: true
         )
     }
 
@@ -106,7 +124,7 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
             let (routes, schedule) = await (routesData, scheduleData)
 
             #if DEBUG
-            let useMockData = true
+            let useMockData = UserDefaults.standard.bool(forKey: "widget_useMockData")
             #else
             let useMockData = false
             #endif
@@ -169,13 +187,14 @@ struct ShuttleWidgetProvider: AppIntentTimelineProvider {
                 targetStop: targetStop,
                 configuredStop: configuredStop,
                 stopNames: validStopNames,
-                theme: configuration.theme
+                theme: configuration.theme,
+                isMockDataEnabled: useMockData
             )
             let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         } catch {
             print("FAILED WIDGET FETCH: \(error)")
-            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, configuredStop: configuredStop, stopNames: [:], theme: configuration.theme)
+            let entry = ShuttleWidgetEntry(date: Date(), activeShuttles: [], nextScheduledArrival: nil, groupedETAs: [], targetStop: targetStop, configuredStop: configuredStop, stopNames: [:], theme: configuration.theme, isMockDataEnabled: false)
             let retryDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
             return Timeline(entries: [entry], policy: .after(retryDate))
         }
@@ -311,6 +330,15 @@ struct SmallShuttleWidgetView: View {
 
                 /* buttons */
                 HStack(spacing: 8) {
+
+                    #if DEBUG
+                    Button(intent: ToggleWidgetMockDataIntent(enable: !entry.isMockDataEnabled)) {
+                        Image(systemName: entry.isMockDataEnabled ? "hammer.fill" : "hammer")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(entry.isMockDataEnabled ? .purple : palette.secondaryText)
+                    #endif
+
                     Button(intent: RefreshShuttleDataIntent()) {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -446,6 +474,14 @@ struct MediumLargeShuttleWidgetView: View {
                     Text(entry.date, style: .time)
 
                     /* buttons */
+                    #if DEBUG
+                    Button(intent: ToggleWidgetMockDataIntent(enable: !entry.isMockDataEnabled)) {
+                        Image(systemName: entry.isMockDataEnabled ? "hammer.fill" : "hammer")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(entry.isMockDataEnabled ? .purple : palette.secondaryText)
+                    #endif
+
                     Button(intent: RefreshShuttleDataIntent()) {
                         Image(systemName: "arrow.clockwise")
                     }

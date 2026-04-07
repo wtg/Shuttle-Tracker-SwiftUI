@@ -33,6 +33,16 @@ class VehicleService: ObservableObject {
      *  up-to-date information is most important.
      */
     func refreshVehicles(isManualRefresh: Bool = false) async {
+        let isDevMode = UserDefaults.standard.bool(forKey: "isDeveloperMode")
+        let isMockEnabled = isDevMode && UserDefaults.standard.bool(forKey: "useMockData")
+        if isMockEnabled {
+            let scenario = UserDefaults.standard.string(forKey: "mockScenario") ?? "standard"
+            let mockData = MockEndpointDataGenerator.generateMergedSimulation(scenario: scenario)
+            await MainActor.run { self.vehicles = mockData }
+            if isManualRefresh { WidgetCenter.shared.reloadAllTimelines() }
+            return
+        }
+
         do {
             async let locationsMap = client.fetch([String: VehicleLocationDTO].self, endpoint: .vehicleLocations)
             async let velocitiesMap = try? client.fetch([String: VehicleVelocityDTO].self, endpoint: .vehicleVelocities)
