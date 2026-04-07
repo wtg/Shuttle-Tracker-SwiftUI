@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D93B97822E846934009BA1CB"
-               BuildableName = "iOS.app"
-               BlueprintName = "iOS"
-               ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+               BuildableName = "ShuttleTrackerApp.app"
+               BlueprintName = "ShuttleTrackerApp"
+               ReferencedContainer = "container:ShuttleTracker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,6 +29,19 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D754699D2F85AA9C0075AFD6"
+               BuildableName = "ShuttleTests.xctest"
+               BlueprintName = "ShuttleTests"
+               ReferencedContainer = "container:ShuttleTracker.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -45,9 +58,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D93B97822E846934009BA1CB"
-            BuildableName = "iOS.app"
-            BlueprintName = "iOS"
-            ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+            BuildableName = "ShuttleTrackerApp.app"
+            BlueprintName = "ShuttleTrackerApp"
+            ReferencedContainer = "container:ShuttleTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +75,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D93B97822E846934009BA1CB"
-            BuildableName = "iOS.app"
-            BlueprintName = "iOS"
-            ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+            BuildableName = "ShuttleTrackerApp.app"
+            BlueprintName = "ShuttleTrackerApp"
+            ReferencedContainer = "container:ShuttleTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

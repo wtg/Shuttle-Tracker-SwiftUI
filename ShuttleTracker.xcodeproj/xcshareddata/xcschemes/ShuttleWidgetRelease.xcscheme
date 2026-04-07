@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2630"
+   LastUpgradeVersion = "1600"
    wasCreatedForAppExtension = "YES"
    version = "2.0">
    <BuildAction
@@ -17,9 +17,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D7FCEE2D2F476CC100FD7929"
-               BuildableName = "ShuttleWidgetExtension.appex"
-               BlueprintName = "ShuttleWidgetExtension"
-               ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+               BuildableName = "ShuttleWidget.appex"
+               BlueprintName = "ShuttleWidget"
+               ReferencedContainer = "container:ShuttleTracker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,9 +31,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D93B97822E846934009BA1CB"
-               BuildableName = "iOS.app"
-               BlueprintName = "iOS"
-               ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+               BuildableName = "ShuttleTrackerApp.app"
+               BlueprintName = "ShuttleTrackerApp"
+               ReferencedContainer = "container:ShuttleTracker.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,22 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D754699D2F85AA9C0075AFD6"
+               BuildableName = "ShuttleTests.xctest"
+               BlueprintName = "ShuttleTests"
+               ReferencedContainer = "container:ShuttleTracker.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = ""
       selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       launchStyle = "0"
@@ -63,18 +76,18 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D7FCEE2D2F476CC100FD7929"
-            BuildableName = "ShuttleWidgetExtension.appex"
-            BlueprintName = "ShuttleWidgetExtension"
-            ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+            BuildableName = "ShuttleWidget.appex"
+            BlueprintName = "ShuttleWidget"
+            ReferencedContainer = "container:ShuttleTracker.xcodeproj">
          </BuildableReference>
       </RemoteRunnable>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D93B97822E846934009BA1CB"
-            BuildableName = "iOS.app"
-            BlueprintName = "iOS"
-            ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+            BuildableName = "ShuttleTrackerApp.app"
+            BlueprintName = "ShuttleTrackerApp"
+            ReferencedContainer = "container:ShuttleTracker.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <EnvironmentVariables>
@@ -93,11 +106,6 @@
             value = "systemMedium"
             isEnabled = "YES">
          </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "_XCWidgetKind"
-            value = "ShuttleWidget"
-            isEnabled = "YES">
-         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
@@ -113,9 +121,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D93B97822E846934009BA1CB"
-            BuildableName = "iOS.app"
-            BlueprintName = "iOS"
-            ReferencedContainer = "container:Shuttle Tracker.xcodeproj">
+            BuildableName = "ShuttleTrackerApp.app"
+            BlueprintName = "ShuttleTrackerApp"
+            ReferencedContainer = "container:ShuttleTracker.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

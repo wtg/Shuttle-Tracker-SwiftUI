@@ -9,10 +9,17 @@
 /* Begin PBXBuildFile section */
 		D7FCEE2F2F476CC200FD7929 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D764F1A02F2D5B8B00BCCB03 /* WidgetKit.framework */; };
 		D7FCEE302F476CC200FD7929 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D764F1A22F2D5B8B00BCCB03 /* SwiftUI.framework */; };
-		D7FCEE3B2F476CC300FD7929 /* ShuttleWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D7FCEE2E2F476CC100FD7929 /* ShuttleWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D7FCEE3B2F476CC300FD7929 /* ShuttleWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D7FCEE2E2F476CC100FD7929 /* ShuttleWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		D75469A22F85AA9D0075AFD6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D93B977B2E846934009BA1CB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D93B97822E846934009BA1CB;
+			remoteInfo = iOS;
+		};
 		D7FCEE392F476CC300FD7929 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D93B977B2E846934009BA1CB /* Project object */;
@@ -29,7 +36,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				D7FCEE3B2F476CC300FD7929 /* ShuttleWidgetExtension.appex in Embed Foundation Extensions */,
+				D7FCEE3B2F476CC300FD7929 /* ShuttleWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,22 +44,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D754699E2F85AA9C0075AFD6 /* ShuttleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShuttleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D764F1A02F2D5B8B00BCCB03 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D764F1A22F2D5B8B00BCCB03 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		D7FCEE2E2F476CC100FD7929 /* ShuttleWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShuttleWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		D93B97832E846934009BA1CB /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7FCEE2E2F476CC100FD7929 /* ShuttleWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShuttleWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D93B97832E846934009BA1CB /* ShuttleTrackerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShuttleTrackerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D989845D2E850B7100388E28 /* iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iOS.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D7FCEE3C2F476CC300FD7929 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidgetExtension" target */ = {
+		D7FCEE3C2F476CC300FD7929 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidgetExtension */;
+			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidget */;
 		};
-		D7FCEE422F476CF500FD7929 /* Exceptions for "Shared" folder in "ShuttleWidgetExtension" target */ = {
+		D7FCEE422F476CF500FD7929 /* Exceptions for "Shared" folder in "ShuttleWidget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Models/ETAProcessor.swift,
@@ -66,15 +74,20 @@
 				Extensions/Color.swift,
 				Extensions/Time.swift,
 			);
-			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidgetExtension */;
+			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidget */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		D754699F2F85AA9D0075AFD6 /* ShuttleTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ShuttleTests;
+			sourceTree = "<group>";
+		};
 		D7FCEE312F476CC200FD7929 /* ShuttleWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				D7FCEE3C2F476CC300FD7929 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidgetExtension" target */,
+				D7FCEE3C2F476CC300FD7929 /* Exceptions for "ShuttleWidget" folder in "ShuttleWidget" target */,
 			);
 			path = ShuttleWidget;
 			sourceTree = "<group>";
@@ -82,7 +95,7 @@
 		D93B97852E846934009BA1CB /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				D7FCEE422F476CF500FD7929 /* Exceptions for "Shared" folder in "ShuttleWidgetExtension" target */,
+				D7FCEE422F476CF500FD7929 /* Exceptions for "Shared" folder in "ShuttleWidget" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -90,6 +103,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D754699B2F85AA9C0075AFD6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D7FCEE2B2F476CC100FD7929 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,6 +144,7 @@
 				D989845E2E850CBA00388E28 /* iOS */,
 				D93B97852E846934009BA1CB /* Shared */,
 				D7FCEE312F476CC200FD7929 /* ShuttleWidget */,
+				D754699F2F85AA9D0075AFD6 /* ShuttleTests */,
 				D764F19F2F2D5B8B00BCCB03 /* Frameworks */,
 				D93B97842E846934009BA1CB /* Products */,
 			);
@@ -132,8 +153,9 @@
 		D93B97842E846934009BA1CB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D93B97832E846934009BA1CB /* iOS.app */,
-				D7FCEE2E2F476CC100FD7929 /* ShuttleWidgetExtension.appex */,
+				D93B97832E846934009BA1CB /* ShuttleTrackerApp.app */,
+				D7FCEE2E2F476CC100FD7929 /* ShuttleWidget.appex */,
+				D754699E2F85AA9C0075AFD6 /* ShuttleTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -149,9 +171,32 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D7FCEE2D2F476CC100FD7929 /* ShuttleWidgetExtension */ = {
+		D754699D2F85AA9C0075AFD6 /* ShuttleTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D7FCEE3D2F476CC300FD7929 /* Build configuration list for PBXNativeTarget "ShuttleWidgetExtension" */;
+			buildConfigurationList = D75469A42F85AA9D0075AFD6 /* Build configuration list for PBXNativeTarget "ShuttleTests" */;
+			buildPhases = (
+				D754699A2F85AA9C0075AFD6 /* Sources */,
+				D754699B2F85AA9C0075AFD6 /* Frameworks */,
+				D754699C2F85AA9C0075AFD6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D75469A32F85AA9D0075AFD6 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D754699F2F85AA9D0075AFD6 /* ShuttleTests */,
+			);
+			name = ShuttleTests;
+			packageProductDependencies = (
+			);
+			productName = ShuttleTests;
+			productReference = D754699E2F85AA9C0075AFD6 /* ShuttleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D7FCEE2D2F476CC100FD7929 /* ShuttleWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7FCEE3D2F476CC300FD7929 /* Build configuration list for PBXNativeTarget "ShuttleWidget" */;
 			buildPhases = (
 				D7FCEE2A2F476CC100FD7929 /* Sources */,
 				D7FCEE2B2F476CC100FD7929 /* Frameworks */,
@@ -164,16 +209,16 @@
 			fileSystemSynchronizedGroups = (
 				D7FCEE312F476CC200FD7929 /* ShuttleWidget */,
 			);
-			name = ShuttleWidgetExtension;
+			name = ShuttleWidget;
 			packageProductDependencies = (
 			);
 			productName = ShuttleWidgetExtension;
-			productReference = D7FCEE2E2F476CC100FD7929 /* ShuttleWidgetExtension.appex */;
+			productReference = D7FCEE2E2F476CC100FD7929 /* ShuttleWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		D93B97822E846934009BA1CB /* iOS */ = {
+		D93B97822E846934009BA1CB /* ShuttleTrackerApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D93B978E2E846935009BA1CB /* Build configuration list for PBXNativeTarget "iOS" */;
+			buildConfigurationList = D93B978E2E846935009BA1CB /* Build configuration list for PBXNativeTarget "ShuttleTrackerApp" */;
 			buildPhases = (
 				D93B977F2E846934009BA1CB /* Sources */,
 				D93B97802E846934009BA1CB /* Frameworks */,
@@ -188,11 +233,11 @@
 			fileSystemSynchronizedGroups = (
 				D93B97852E846934009BA1CB /* Shared */,
 			);
-			name = iOS;
+			name = ShuttleTrackerApp;
 			packageProductDependencies = (
 			);
 			productName = "Shuttle Tracker";
-			productReference = D93B97832E846934009BA1CB /* iOS.app */;
+			productReference = D93B97832E846934009BA1CB /* ShuttleTrackerApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -205,6 +250,10 @@
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					D754699D2F85AA9C0075AFD6 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = D93B97822E846934009BA1CB;
+					};
 					D7FCEE2D2F476CC100FD7929 = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -213,7 +262,7 @@
 					};
 				};
 			};
-			buildConfigurationList = D93B977E2E846934009BA1CB /* Build configuration list for PBXProject "Shuttle Tracker" */;
+			buildConfigurationList = D93B977E2E846934009BA1CB /* Build configuration list for PBXProject "ShuttleTracker" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -227,13 +276,21 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D93B97822E846934009BA1CB /* iOS */,
-				D7FCEE2D2F476CC100FD7929 /* ShuttleWidgetExtension */,
+				D93B97822E846934009BA1CB /* ShuttleTrackerApp */,
+				D7FCEE2D2F476CC100FD7929 /* ShuttleWidget */,
+				D754699D2F85AA9C0075AFD6 /* ShuttleTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		D754699C2F85AA9C0075AFD6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D7FCEE2C2F476CC100FD7929 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -251,6 +308,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		D754699A2F85AA9C0075AFD6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D7FCEE2A2F476CC100FD7929 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -268,14 +332,58 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		D75469A32F85AA9D0075AFD6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D93B97822E846934009BA1CB /* ShuttleTrackerApp */;
+			targetProxy = D75469A22F85AA9D0075AFD6 /* PBXContainerItemProxy */;
+		};
 		D7FCEE3A2F476CC300FD7929 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidgetExtension */;
+			target = D7FCEE2D2F476CC100FD7929 /* ShuttleWidget */;
 			targetProxy = D7FCEE392F476CC300FD7929 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		D75469A52F85AA9D0075AFD6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = identifier.ShuttleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iOS";
+			};
+			name = Debug;
+		};
+		D75469A62F85AA9D0075AFD6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = identifier.ShuttleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/iOS";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		D7FCEE3E2F476CC300FD7929 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -560,7 +668,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D7FCEE3D2F476CC300FD7929 /* Build configuration list for PBXNativeTarget "ShuttleWidgetExtension" */ = {
+		D75469A42F85AA9D0075AFD6 /* Build configuration list for PBXNativeTarget "ShuttleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D75469A52F85AA9D0075AFD6 /* Debug */,
+				D75469A62F85AA9D0075AFD6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D7FCEE3D2F476CC300FD7929 /* Build configuration list for PBXNativeTarget "ShuttleWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D7FCEE3E2F476CC300FD7929 /* Debug */,
@@ -569,7 +686,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D93B977E2E846934009BA1CB /* Build configuration list for PBXProject "Shuttle Tracker" */ = {
+		D93B977E2E846934009BA1CB /* Build configuration list for PBXProject "ShuttleTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D93B978C2E846935009BA1CB /* Debug */,
@@ -578,7 +695,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D93B978E2E846935009BA1CB /* Build configuration list for PBXNativeTarget "iOS" */ = {
+		D93B978E2E846935009BA1CB /* Build configuration list for PBXNativeTarget "ShuttleTrackerApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D93B978F2E846935009BA1CB /* Debug */,
