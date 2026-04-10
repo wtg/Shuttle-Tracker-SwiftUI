@@ -23,12 +23,11 @@ class MockURLProtocol: URLProtocol {
             let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
         case .failure(let error):
             // network failure
             client?.urlProtocol(self, didFailWithError: error)
         }
-        client?.urlProtocolDidFinishLoading(self)
     }
-
     override func stopLoading() { }
 }

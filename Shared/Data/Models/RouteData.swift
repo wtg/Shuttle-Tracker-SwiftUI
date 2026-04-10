@@ -39,6 +39,14 @@ struct RouteDirectionData: Codable {
         init?(intValue: Int) { return nil }
     }
 
+    init(color: String, stops: [String], polylineStops: [String], routes: [[[Double]]], stopDetails: [String: ShuttleStopData]) {
+        self.color = color
+        self.stops = stops
+        self.polylineStops = polylineStops
+        self.routes = routes
+        self.stopDetails = stopDetails
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: AnyKey.self)
 

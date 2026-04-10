@@ -66,6 +66,7 @@
 				Data/Models/ETAProcessor.swift,
 				Data/Models/MockEndpointDataGenerator.swift,
 				Data/Models/RouteData.swift,
+				Data/Models/ScheduleCalculator.swift,
 				Data/Models/ScheduleData.swift,
 				Data/Models/VehicleLocationData.swift,
 				Data/Models/VehicleResponseModels.swift,
