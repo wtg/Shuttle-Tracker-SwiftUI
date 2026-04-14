@@ -34,8 +34,12 @@ class ScheduleViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func loadData() {
+    func loadScheduleData() {
         Task { await scheduleService.fetchSchedule() }
+    }
+
+    func refreshETAs() async {
+        await vehicleService.refreshVehicles(isManualRefresh: true)
     }
 
     private func refreshSelection() {

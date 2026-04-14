@@ -29,7 +29,7 @@ struct ScheduleView: View {
         }
         .background(Color(uiColor: .systemBackground))
         .onAppear {
-            viewModel.loadData()
+            viewModel.loadScheduleData()
         }
     }
 

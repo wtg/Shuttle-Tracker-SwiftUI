@@ -5,6 +5,9 @@ struct SettingsView: View {
     @AppStorage("isDeveloperMode") private var isDeveloperMode: Bool = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = true
+
+    @AppStorage("useMockData") private var useMockData: Bool = false
+
     @State private var showingCacheAlert = false
     var body: some View {
         NavigationStack {
@@ -21,6 +24,12 @@ struct SettingsView: View {
 
                 Section {
                     Toggle("Developer Mode", isOn: $isDeveloperMode)
+                    if isDeveloperMode {
+                        NavigationLink(destination: DeveloperSettingsView()) {
+                            Text("Developer Tools")
+                                .foregroundStyle(.blue)
+                        }
+                    }
                 } header: {
                     Text("General")
                 }
@@ -30,13 +39,6 @@ struct SettingsView: View {
                         clearCache()
                     } label: {
                         Text("Clear Data Cache")
-                    }
-                    if isDeveloperMode {
-                        Button(role: .destructive) {
-                            hasSeenOnboarding = false
-                        } label: {
-                            Text("Reset Onboarding")
-                        }
                     }
                 } header: {
                     Text("Troubleshooting")

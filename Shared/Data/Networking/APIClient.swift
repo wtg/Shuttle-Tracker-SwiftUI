@@ -15,6 +15,11 @@ struct APIClient {
 
     private let baseURL: URL = URL(string: "https://api-shuttles.rpi.edu/api")!
 
+    let session: URLSession
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+
     /// Typed API errors for better error handling
     enum APIError: Error, LocalizedError {
         case invalidURL
@@ -45,7 +50,7 @@ struct APIClient {
         let response: URLResponse
 
         do {
-            (data, response) = try await URLSession.shared.data(from: url)
+            (data, response) = try await session.data(from: url)
         } catch {
             throw APIError.networkError(underlying: error)
         }

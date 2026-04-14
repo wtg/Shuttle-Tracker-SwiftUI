@@ -13,6 +13,8 @@ import CoreLocation
 struct VehicleLocationData: Identifiable {
     var id: String { name } // for ForEach loops
 
+    private static let etaPastTolerance: TimeInterval = -60 * 2
+
     // from /locations (assuming optionals based on frontend impl)
     let name: String
     let latitude: Double
@@ -38,19 +40,21 @@ struct VehicleLocationData: Identifiable {
     // finds this vehicles eta stops that are in the future
     var futureEtas: [String: String] {
         let now = Date()
+        let threshold = now.addingTimeInterval(Self.etaPastTolerance)
         return stopEtaTimes.filter { _, timeString in
             guard let etaDate = timeString.isoTimeToDate else { return false }
-            return etaDate > now
+            return etaDate > threshold
         }
     }
 
     // finds this vehicle's nearest eta to a set of stops: ["STUDENT_UNION", "STUDENT_UNION_RETURN"]
     func soonestFutureEta(for keys: [String]) -> String? {
         let now = Date()
+        let threshold = now.addingTimeInterval(Self.etaPastTolerance)
         return keys
             .compactMap { key -> (string: String, date: Date)? in
                 guard let timeStr = stopEtaTimes[key],
-                      let date = timeStr.isoTimeToDate, date > now else { return nil }
+                      let date = timeStr.isoTimeToDate, date > threshold else { return nil }
                 return (timeStr, date)
             }
             .min(by: { $0.date < $1.date })?

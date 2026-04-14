@@ -50,20 +50,17 @@ struct ETAListView: View {
             }
             .listStyle(.insetGrouped)
             .refreshable {
-                viewModel.loadData()
+                await viewModel.refreshETAs()
             }
             .overlay {
                 if viewModel.getGroupedETAs().isEmpty {
                     ContentUnavailableView(
-                        "No Active Shuttles",
+                        "No ETA predictions available.",
                         systemImage: "bus.doubledecker.fill",
                         description: Text("Shuttles are either offline or have no upcoming stops.")
                     )
                 }
             }
-        }
-        .onAppear {
-            viewModel.loadData()
         }
     }
 
