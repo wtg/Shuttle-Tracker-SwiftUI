@@ -42,8 +42,8 @@ typealias AggregatedSchedule = [DaySchedule]
 
 extension AggregatedSchedule {
     /// Returns the schedule for today based on the current weekday
-    func todaySchedule() -> DaySchedule {
-        let weekday = Calendar.current.component(.weekday, from: Date())
+    func todaySchedule(for date: Date = Date()) -> DaySchedule {
+        let weekday = Calendar.current.component(.weekday, from: date)
         // Calendar weekday: 1 = Sunday, 2 = Monday, etc.
         // Array index: 0 = Sunday, 1 = Monday, etc.
         let index = weekday - 1
@@ -52,7 +52,7 @@ extension AggregatedSchedule {
     }
 
     /// Returns the set of route names that are active today
-    func activeRouteNames() -> Set<String> {
-        Set(todaySchedule().keys)
+    func activeRouteNames(for date: Date = Date()) -> Set<String> {
+        Set(todaySchedule(for: date).keys)
     }
 }
