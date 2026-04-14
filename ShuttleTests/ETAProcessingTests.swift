@@ -30,4 +30,39 @@ struct ETAProcessorTests {
         // North should have the 5 min ETA, West should have the 10 min ETA
         #expect(northGroup?.etas.first?.vehicleName == "408")
     }
+
+    @Test("VehicleLocationData correctly filters future ETAs and finds the soonest")
+    func testFutureEtasAndSoonest() {
+        let now = Date()
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        let pastDate = now.addingTimeInterval(-300) // 5 mins ago
+        let pastToleranceDate = now.addingTimeInterval(-30) // 30 secs ago (within -120s tolerance)
+        let futureDate1 = now.addingTimeInterval(300) // 5 mins into the future
+        let futureDate2 = now.addingTimeInterval(600) // 10 mins into the future
+
+        let etas = [
+            "STOP_PAST": formatter.string(from: pastDate),
+            "STOP_TOLERANCE": formatter.string(from: pastToleranceDate),
+            "STOP_FUTURE_1": formatter.string(from: futureDate1),
+            "STOP_FUTURE_2": formatter.string(from: futureDate2)
+        ]
+
+        let vehicle = VehicleLocationData(
+            name: "TestBus", latitude: 0, longitude: 0, headingDegrees: 0, speedMph: 0,
+            timestamp: formatter.string(from: now), formattedLocation: "Test",
+            routeName: "WEST", isAtStop: false, currentStop: nil, stopEtaTimes: etas
+        )
+
+        let futureEtas = vehicle.futureEtas
+
+        // should only drop STOP_PAST
+        #expect(futureEtas.count == 3)
+        #expect(futureEtas["STOP_PAST"] == nil)
+        #expect(futureEtas["STOP_TOLERANCE"] != nil)
+
+        let soonest = vehicle.soonestFutureEta(for: ["STOP_FUTURE_1", "STOP_FUTURE_2", "STOP_PAST"])
+        #expect(soonest == formatter.string(from: futureDate1))
+    }
 }

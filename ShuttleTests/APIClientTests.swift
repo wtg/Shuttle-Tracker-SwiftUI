@@ -40,7 +40,7 @@ struct APIClientTests {
     @Test("Fetch throws network error when connection fails")
     func fetchHandlesNetworkFailure() async {
         let client = makeMockClient()
-        
+
         let targetURL = URL(string: "https://api-shuttles.rpi.edu/api/velocities")!
 
         let mockError = URLError(.notConnectedToInternet)

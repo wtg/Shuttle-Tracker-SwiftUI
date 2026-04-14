@@ -3,7 +3,6 @@ import Foundation
 @testable import ShuttleTrackerApp
 
 struct ScheduleDataTests {
-
     @Test("todaySchedule returns correct schedule based on weekday")
     func testTodayScheduleResolution() {
         // Index 0 = Sunday ... Index 6 = Saturday
