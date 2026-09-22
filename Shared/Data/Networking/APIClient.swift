@@ -13,7 +13,7 @@ private let logger = Logger(subsystem: "edu.rpi.shuttletracker", category: "APIC
 struct APIClient {
     static let shared = APIClient()
 
-    private let baseURL: URL = URL(string: "https://api-shuttles.rpi.edu/api")!
+    private let baseURL: URL = URL(string: "https://shuttles.rpi.edu/api")!
 
     /// Typed API errors for better error handling
     enum APIError: Error, LocalizedError {
